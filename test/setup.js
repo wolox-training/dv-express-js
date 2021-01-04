@@ -10,3 +10,7 @@ const truncateDatabase = () => Promise.all(tables.map(truncateTable));
 global.beforeEach(async () => {
   await truncateDatabase();
 });
+
+test('Should pass', () => {
+  expect(1).toBe(1);
+});
