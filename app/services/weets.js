@@ -6,7 +6,7 @@ const fetchWeet = () =>
     .then(({ data }) => data)
     .catch(error => {
       console.error(error);
-      return error;
+      return Promise.reject(error);
     });
 
 module.exports = {
