@@ -4,7 +4,10 @@ const fetchWeet = () =>
   api
     .get('/random')
     .then(({ data }) => data)
-    .catch(error => error);
+    .catch(error => {
+      console.error(error);
+      return error;
+    });
 
 module.exports = {
   fetchWeet
