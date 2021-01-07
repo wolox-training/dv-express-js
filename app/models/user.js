@@ -7,18 +7,16 @@ module.exports = (sequelize, DataTypes) => {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        unique: true,
-        autoIncrement: true,
-        allowNull: false
+        autoIncrement: true
       },
-      first_name: {
+      firstName: {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
           notEmpty: true
         }
       },
-      last_name: {
+      lastName: {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
@@ -43,6 +41,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       timestamps: false,
+      underscored: true,
       freezeTableName: true,
       tableName: 'users'
     }
