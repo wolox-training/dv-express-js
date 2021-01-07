@@ -1,12 +1,12 @@
 const db = require('../models');
 
 const signUpSchema = {
-  first_name: {
+  firstName: {
     exists: true,
     notEmpty: true,
     errorMessage: 'First name cannot be empty!'
   },
-  last_name: {
+  lastName: {
     exists: true,
     notEmpty: true,
     errorMessage: 'Last name cannot be empty!'

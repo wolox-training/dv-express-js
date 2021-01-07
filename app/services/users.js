@@ -2,9 +2,9 @@ const db = require('../models');
 
 const createUser = body =>
   new Promise((resolve, reject) => {
-    db.User.create(body)
-      .then(({ dataValues }) => {
-        resolve(dataValues);
+    db.User.newUser(body)
+      .then(user => {
+        resolve(user);
       })
       .catch(error => {
         console.error(error);
