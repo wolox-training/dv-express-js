@@ -7,9 +7,6 @@ module.exports = {
     properties: {
       message: {
         type: 'string'
-      },
-      internal_code: {
-        type: 'string'
       }
     }
   }
