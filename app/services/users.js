@@ -7,7 +7,6 @@ const createUser = body =>
         resolve(user);
       })
       .catch(error => {
-        console.error(error);
         reject(error);
       });
   });

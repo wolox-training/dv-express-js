@@ -1,7 +1,6 @@
 'use strict';
 
-// const bcrypt = require('bcrypt');
-const hashedPassword = require('../helpers/hashPassword');
+const hashString = require('../helpers/hashString');
 
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
@@ -48,18 +47,14 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'users'
     }
   );
+
   User.newUser = async data => {
     const user = User.create({
       ...data,
-      password: await hashedPassword(data.password)
+      password: await hashString(data.password)
     });
     return user;
   };
-
-  //   User.beforeCreate(async user => {
-  //     const hashedPassword = await bcrypt.hashSync(user.password, Number(process.env.SALT));
-  //     user.password = hashedPassword
-  //   });
 
   return User;
 };
