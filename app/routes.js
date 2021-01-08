@@ -8,6 +8,6 @@ exports.init = app => {
   app.get('/health', healthCheck);
   app.get('/weets', weetsController.generateWeet);
   app.post('/users', validateBySchema(signUpSchema), usersController.signUp);
-  // app.put('/endpoint/put/path', [], controller.methodPUT);
+  app.post('/users/sessions', [], usersController.signIn);
   // app.post('/endpoint/post/path', [], controller.methodPOST);
 };

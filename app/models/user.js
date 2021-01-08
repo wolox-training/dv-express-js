@@ -1,7 +1,8 @@
 'use strict';
 
-// const bcrypt = require('bcrypt');
+const bcrypt = require('bcrypt');
 const hashedPassword = require('../helpers/hashPassword');
+const errors = require('../errors');
 
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
@@ -54,6 +55,15 @@ module.exports = (sequelize, DataTypes) => {
       password: await hashedPassword(data.password)
     });
     return user;
+  };
+
+  User.findByCredentials = async (email, password) => {
+    const user = await User.findOne({ where: { email } });
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (user && validPassword) {
+      return user;
+    }
+    throw errors.wrongCredentials('Unable to login.');
   };
 
   //   User.beforeCreate(async user => {

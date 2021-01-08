@@ -12,4 +12,15 @@ const createUser = body =>
       });
   });
 
-module.exports = { createUser };
+const access = ({ email, password }) =>
+  new Promise((resolve, reject) => {
+    db.User.findByCredentials(email, password)
+      .then(user => {
+        resolve({ user, token });
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+
+module.exports = { createUser, access };

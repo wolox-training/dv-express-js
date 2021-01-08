@@ -10,4 +10,13 @@ const signUp = async ({ body }, res) => {
   }
 };
 
-module.exports = { signUp };
+const signIn = async (req, res, next) => {
+  try {
+    const user = await usersService.access(req.body);
+    res.status(200).send(user);
+  } catch {
+    next();
+  }
+};
+
+module.exports = { signUp, signIn };
