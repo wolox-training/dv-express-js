@@ -19,7 +19,7 @@ module.exports = {
         201: {
           description: 'New user was created'
         },
-        409: {
+        422: {
           description: 'Invalid parameters',
           content: {
             'application/json': {
@@ -27,7 +27,8 @@ module.exports = {
                 $ref: '#/components/schemas/Error'
               },
               example: {
-                message: 'Email already in registered.'
+                message: 'Email already in registered.',
+                internal_code: 'schema_validation'
               }
             }
           }
