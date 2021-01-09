@@ -27,7 +27,7 @@ module.exports = {
                 $ref: '#/components/schemas/Error'
               },
               example: {
-                message: 'Email already in registered.',
+                message: 'Password must be at least 8 characters.',
                 internal_code: 'schema_validation'
               }
             }
