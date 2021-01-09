@@ -25,7 +25,7 @@ describe('Post Sign UP', () => {
     const response = await request(app)
       .post('/users')
       .send(invalidPassword)
-      .expect(409);
+      .expect(422);
     expect(response.text).toContain('password');
     done();
   });
@@ -44,7 +44,7 @@ describe('Post Sign UP', () => {
     const response = await request(app)
       .post('/users')
       .send()
-      .expect(409);
+      .expect(422);
     expect(response.text).toContain('empty');
     done();
   });

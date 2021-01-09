@@ -1,5 +1,3 @@
-const db = require('../models');
-
 const signUpSchema = {
   firstName: {
     exists: true,
@@ -14,16 +12,11 @@ const signUpSchema = {
   email: {
     exists: true,
     isEmail: { errorMessage: 'Not a valid email.' },
-    contains: { options: '@wolox.co', errorMessage: 'Email does not belong wolox domain.' },
-    notEmpty: { errorMessage: 'email cannot be empty!' },
-    custom: {
-      options: async value => {
-        const user = await db.User.findOne({ where: { email: value } });
-        if (user) {
-          throw new Error('Email is already registered.');
-        }
-      }
+    matches: {
+      options: [/^[\w-.]+@wolox(.)+[(co|ar|cl|mx)]{2,2}$/],
+      errorMessage: 'Email does not belong wolox domain.'
     },
+    notEmpty: { errorMessage: 'email cannot be empty!' },
     trim: true,
     toLowerCase: true
   },
