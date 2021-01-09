@@ -5,9 +5,9 @@ const signUp = async (req, res, next) => {
   try {
     const user = await usersService.createUser(req.body);
     logger.info(`username: ${user.email}`);
-    res.status(201).send(user);
-  } catch {
-    next();
+    return res.status(201).send(user);
+  } catch (error) {
+    return next(error);
   }
 };
 
