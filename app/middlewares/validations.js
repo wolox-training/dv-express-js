@@ -6,7 +6,7 @@ const verifySchema = schema => checkSchema(schema);
 const validateResult = (req, _, next) => {
   const err = validationResult(req);
   if (!err.isEmpty()) {
-    return next(errors.schemaValidation(err.mapped()));
+    return next(errors.schemaValidationError(err.mapped()));
   }
   return next();
 };
