@@ -35,7 +35,7 @@ describe('Post Sign UP', () => {
     const response = await request(app)
       .post('/users')
       .send(user.dataValues)
-      .expect(422);
+      .expect(409);
     expect(response.text).toContain('Email is already');
     done();
   });
