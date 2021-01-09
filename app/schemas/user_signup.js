@@ -1,5 +1,3 @@
-const db = require('../models');
-
 const signUpSchema = {
   firstName: {
     exists: true,
@@ -19,14 +17,6 @@ const signUpSchema = {
       errorMessage: 'Email does not belong wolox domain.'
     },
     notEmpty: { errorMessage: 'email cannot be empty!' },
-    custom: {
-      options: async value => {
-        const user = await db.User.findOne({ where: { email: value } });
-        if (user) {
-          throw new Error('Email is already registered.');
-        }
-      }
-    },
     trim: true,
     toLowerCase: true
   },
