@@ -119,3 +119,32 @@ describe('Post Sign In User', () => {
     done();
   });
 });
+
+describe('Get Users', () => {
+  test('Should fail for unauthenticate user', async done => {
+    const response = await request(app)
+      .get('/users')
+      .send();
+    expect(response.text).toContain('Please sign in');
+    expect(response.status).toBe(401);
+    done();
+  });
+
+  test('Should work for authenticate user', async done => {
+    await request(app)
+      .post('/users')
+      .send(user.dataValues);
+    const { body } = await request(app)
+      .post('/users/sessions')
+      .send({
+        email: user.dataValues.email,
+        password: 'contrasena1234'
+      });
+    const response = await request(app)
+      .get('/users')
+      .set('Authorization', `${body.token}`)
+      .send();
+    expect(response.status).toBe(200);
+    done();
+  });
+});

@@ -20,4 +20,13 @@ const signIn = async (req, res, next) => {
   }
 };
 
-module.exports = { signUp, signIn };
+const usersList = async (req, res, next) => {
+  try {
+    const users = await usersService.getUsers(req.query);
+    return res.status(200).send(users);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+module.exports = { signUp, signIn, usersList };
