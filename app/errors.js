@@ -17,3 +17,6 @@ exports.schemaValidationError = message => internalError(message, exports.SCHEMA
 
 exports.REGISTERED_EMAIL_ERROR = 'registered_email_error';
 exports.registeredEmailError = message => internalError(message, exports.REGISTERED_EMAIL_ERROR);
+
+exports.WRONG_CREDENTIALS_ERROR = 'wrong_credentials_error';
+exports.wrongCredentialsError = message => internalError(message, exports.WRONG_CREDENTIALS_ERROR);

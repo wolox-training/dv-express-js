@@ -60,17 +60,11 @@ module.exports = (sequelize, DataTypes) => {
 
   User.findByCredentials = async (email, password) => {
     const user = await User.findOne({ where: { email } });
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (user && validPassword) {
+    if (user && (await bcrypt.compare(password, user.password))) {
       return user;
     }
-    throw errors.wrongCredentials('Unable to login.');
+    throw errors.wrongCredentialsError('Unable to login.');
   };
-
-  //   User.beforeCreate(async user => {
-  //     const hashedPassword = await bcrypt.hashSync(user.password, Number(process.env.SALT));
-  //     user.password = hashedPassword
-  //   });
 
   return User;
 };
