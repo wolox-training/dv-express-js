@@ -1,5 +1,6 @@
 const usersService = require('../services/users');
 const logger = require('../logger');
+const errors = require('../errors');
 
 const signUp = async (req, res, next) => {
   try {
@@ -29,4 +30,16 @@ const usersList = async (req, res, next) => {
   }
 };
 
-module.exports = { signUp, signIn, usersList };
+const admin = async (req, res, next) => {
+  if (req.user.role === 'user') {
+    return next(errors.forbidenModuleError('You have no access to this module.'));
+  }
+  try {
+    const user = await usersService.createAdmin(req.body);
+    return res.status(201).send(user);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+module.exports = { signUp, signIn, usersList, admin };
