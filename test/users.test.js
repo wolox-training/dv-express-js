@@ -12,7 +12,7 @@ beforeEach(async () => {
   user = await buildUser();
 });
 
-describe('Post Sign UP', () => {
+describe('Post Sign Up', () => {
   test('Should sign up a new user', async done => {
     // const user = await factoryByModel('User');
     const response = await request(app)
@@ -145,6 +145,56 @@ describe('Get Users', () => {
       .set('Authorization', `${body.token}`)
       .send();
     expect(response.status).toBe(200);
+    done();
+  });
+});
+
+describe('Post User Admin', () => {
+  test('Should fail for unauthenticate user', async done => {
+    const response = await request(app)
+      .post('/admin/users')
+      .send(user.dataValues)
+      .expect(401);
+    expect(response.text).toContain('Please sign in');
+    done();
+  });
+
+  test('Should fail for unauthorized user', async done => {
+    await request(app)
+      .post('/users')
+      .send(user.dataValues);
+    const { body } = await request(app)
+      .post('/users/sessions')
+      .send({
+        email: user.dataValues.email,
+        password: 'contrasena1234'
+      });
+    const response = await request(app)
+      .post('/admin/users')
+      .set('Authorization', `${body.token}`)
+      .send(user.dataValues)
+      .expect(403);
+    expect(response.text).toContain('forbiden_module_error');
+    done();
+  });
+
+  test('Should post admin for authorized user', async done => {
+    await request(app)
+      .post('/users')
+      .send({ ...user.dataValues, role: 'admin' });
+    const { body } = await request(app)
+      .post('/users/sessions')
+      .send({
+        email: user.dataValues.email,
+        password: 'contrasena1234'
+      });
+    const userDifferenteEmail = { ...user.dataValues, email: 'daniel.vega@wolox.co' };
+    const response = await request(app)
+      .post('/admin/users')
+      .set('Authorization', `${body.token}`)
+      .send(userDifferenteEmail)
+      .expect(201);
+    expect(response.text).toContain('daniel.vega@wolox.co');
     done();
   });
 });
