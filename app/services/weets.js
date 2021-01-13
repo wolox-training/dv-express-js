@@ -1,13 +1,11 @@
 const api = require('../../config/axios');
+const errors = require('../errors');
 
 const fetchWeet = () =>
   api
     .get('/random')
     .then(({ data }) => data)
-    .catch(error => {
-      console.error(error);
-      return Promise.reject(error);
-    });
+    .catch(() => Promise.reject(errors.databaseError('Could not connect with external api')));
 
 module.exports = {
   fetchWeet

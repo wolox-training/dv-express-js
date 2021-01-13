@@ -1,5 +1,7 @@
 'use strict';
 
+const hashString = require('../helpers/hashString');
+
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
     'User',
@@ -45,5 +47,14 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'users'
     }
   );
+
+  User.newUser = async data => {
+    const user = User.create({
+      ...data,
+      password: await hashString(data.password)
+    });
+    return user;
+  };
+
   return User;
 };
