@@ -9,6 +9,16 @@ const generateWeet = async (req, res, next) => {
   }
 };
 
+const getWeets = async (req, res, next) => {
+  try {
+    const weets = await weetsService.readWeets(req.query);
+    return res.status(200).send(weets);
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
-  generateWeet
+  generateWeet,
+  getWeets
 };

@@ -20,6 +20,23 @@ const fetchWeet = async user => {
   }
 };
 
+const readWeets = async ({ page = 1, limit = 5 }) => {
+  const offset = (page - 1) * limit;
+  try {
+    const data = await db.Weet.findAndCountAll({ limit, offset });
+    const { count: totalItems, rows: weets } = data;
+    const currentPage = page;
+    const totalPages = Math.ceil(totalItems / limit);
+    if (page > totalPages) {
+      return Promise.reject(errors.badRequestError('Page requested exceed the total of pages.'));
+    }
+    return Promise.resolve({ totalItems, weets, totalPages, currentPage });
+  } catch (error) {
+    return Promise.reject(errors.databaseError('Some error occurred while getting weets'));
+  }
+};
+
 module.exports = {
-  fetchWeet
+  fetchWeet,
+  readWeets
 };
