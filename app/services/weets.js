@@ -23,8 +23,10 @@ const fetchWeet = async user => {
 const readWeets = async ({ page = 1, limit = 5 }) => {
   const offset = (page - 1) * limit;
   try {
-    const data = await db.Weet.findAndCountAll({ limit, offset });
-    const { count: totalItems, rows: weets } = data;
+    const { count: totalItems, rows: weets } = await db.Weet.findAndCountAll({ limit, offset });
+    if (totalItems === 0) {
+      return Promise.resolve({ noWeets: 'There are no weets to show.' });
+    }
     const currentPage = page;
     const totalPages = Math.ceil(totalItems / limit);
     if (page > totalPages) {
