@@ -1,9 +1,9 @@
 const weetsService = require('../services/weets');
 
-const generateWeet = async (_, res, next) => {
+const generateWeet = async (req, res, next) => {
   try {
-    const weet = await weetsService.fetchWeet();
-    return res.status(200).send(weet);
+    const weet = await weetsService.fetchWeet(req.user);
+    return res.status(201).send(weet);
   } catch (error) {
     return next(error);
   }

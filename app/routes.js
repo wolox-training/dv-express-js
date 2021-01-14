@@ -8,7 +8,8 @@ const auth = require('./middlewares/auth');
 
 exports.init = app => {
   app.get('/health', healthCheck);
-  app.get('/weets', weetsController.generateWeet);
+
+  app.post('/weets', auth, weetsController.generateWeet);
 
   app.post('/users', [validateBySchema(signUpSchema), uniqueEmail], usersController.signUp);
   app.post('/users/sessions', validateBySchema(signInSchema), usersController.signIn);
