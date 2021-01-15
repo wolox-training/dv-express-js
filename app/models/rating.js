@@ -18,15 +18,18 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       score: {
-        type: DataTypes.ENUM,
-        values: [1, -1],
-        allowNull: false
+        type: DataTypes.INTEGER,
+        validate: {
+          min: -1,
+          max: 1,
+          not: 0
+        }
       }
     },
     {
       timestamps: false,
       underscored: true,
-      tableName: 'rating-weets'
+      tableName: 'ratings'
     }
   );
   return Rating;

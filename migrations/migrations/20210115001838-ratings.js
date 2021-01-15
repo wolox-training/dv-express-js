@@ -8,7 +8,7 @@ module.exports = {
         primaryKey: true,
         autoIncrement: true
       },
-      ratingUserId: {
+      rating_user_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
@@ -16,7 +16,7 @@ module.exports = {
           key: 'id'
         }
       },
-      weetId: {
+      weet_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
