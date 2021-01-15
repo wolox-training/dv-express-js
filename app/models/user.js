@@ -46,6 +46,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM,
         values: ['admin', 'user'],
         defaultValue: 'user'
+      },
+      position: {
+        type: DataTypes.ENUM,
+        values: ['Developer', 'Lead', 'TL', 'EM', 'HEAD', 'CEO'],
+        defaultValue: 'Developer'
       }
     },
     {
@@ -54,6 +59,14 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'users'
     }
   );
+  User.associate = models => {
+    User.hasMany(models.Weet, {
+      foreingKey: 'userId'
+    });
+    User.belongsToMany(models.Weet, {
+      through: models.Rating
+    });
+  };
 
   User.newUser = async data => {
     const user = User.create({
