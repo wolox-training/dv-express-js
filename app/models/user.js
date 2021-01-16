@@ -59,14 +59,6 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'users'
     }
   );
-  User.associate = models => {
-    User.hasMany(models.Weet, {
-      foreingKey: 'userId'
-    });
-    User.belongsToMany(models.Weet, {
-      through: models.Rating
-    });
-  };
 
   User.newUser = async data => {
     const user = User.create({
@@ -74,6 +66,19 @@ module.exports = (sequelize, DataTypes) => {
       password: await hashString(data.password)
     });
     return user;
+  };
+
+  User.setPosition = async (user, points) => {
+    let position = '';
+    if (points <= 5) position = 'Developer';
+    else if (points <= 9) position = 'Lead';
+    else if (points <= 19) position = 'TL';
+    else if (points <= 29) position = 'EM';
+    else if (points <= 49) position = 'HEAD';
+    else position = 'CEO';
+
+    user.position = position;
+    await user.save();
   };
 
   User.findByCredentials = async (email, password) => {

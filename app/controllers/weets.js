@@ -18,7 +18,23 @@ const getWeets = async (req, res, next) => {
   }
 };
 
+const rateWeet = async (req, res, next) => {
+  const {
+    params: { id },
+    user: { id: ratingUserId },
+    body: { score }
+  } = req;
+  const weetId = Number(id);
+  try {
+    await weetsService.rating(ratingUserId, weetId, score);
+    return res.status(200).send({ message: 'Rating successfully stored' });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   generateWeet,
-  getWeets
+  getWeets,
+  rateWeet
 };

@@ -10,7 +10,8 @@ const statusCodes = {
   [errors.SCHEMA_VALIDATION_ERROR]: 422,
   [errors.REGISTERED_EMAIL_ERROR]: 409,
   [errors.FORBIDEN_MODULE_ERROR]: 403,
-  [errors.BAD_REQUEST_ERROR]: 400
+  [errors.BAD_REQUEST_ERROR]: 400,
+  [errors.NOT_FOUND_ERROR]: 404
 };
 
 exports.handle = (error, req, res, next) => {
