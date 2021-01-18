@@ -7,6 +7,19 @@ const { createUser, buildUser } = require('./factory/users');
 
 let user = '';
 
+const loginNewUser = async loginUser => {
+  await request(app)
+    .post('/users')
+    .send(loginUser.dataValues);
+  const { body } = await request(app)
+    .post('/users/sessions')
+    .send({
+      email: loginUser.dataValues.email,
+      password: loginUser.dataValues.password
+    });
+  return body;
+};
+
 beforeEach(async () => {
   await db.User.destroy({ truncate: { cascade: true } });
   user = await buildUser();
@@ -18,7 +31,8 @@ describe('Post Sign Up', () => {
     const response = await request(app)
       .post('/users')
       .send(user.dataValues);
-    expect(response.text).toContain('esteban.herrera');
+    expect(response.status).toBe(201);
+    expect(response.text).toContain(user.dataValues.firstName);
     done();
   });
 
@@ -26,18 +40,18 @@ describe('Post Sign Up', () => {
     const invalidPassword = { ...user.dataValues, password: 'contra12*' };
     const response = await request(app)
       .post('/users')
-      .send(invalidPassword)
-      .expect(422);
-    expect(response.text).toContain('password');
+      .send(invalidPassword);
+    expect(response.status).toBe(422);
+    expect(response.text).toContain('Password must');
     done();
   });
 
   test('Should fail for email in use', async done => {
-    await createUser();
+    const newUser = await createUser();
     const response = await request(app)
       .post('/users')
-      .send(user.dataValues)
-      .expect(409);
+      .send(newUser.dataValues);
+    expect(response.status).toBe(409);
     expect(response.text).toContain('Email is already');
     done();
   });
@@ -45,9 +59,9 @@ describe('Post Sign Up', () => {
   test('Should fail for empty parameters', async done => {
     const response = await request(app)
       .post('/users')
-      .send()
-      .expect(422);
-    expect(response.text).toContain('empty');
+      .send();
+    expect(response.status).toBe(422);
+    expect(response.text).toContain('cannot be empty');
     done();
   });
 });
@@ -111,7 +125,7 @@ describe('Post Sign In User', () => {
       .post('/users/sessions')
       .send({
         email: user.dataValues.email,
-        password: 'contrasena1234'
+        password: user.dataValues.password
       });
     expect(response.text).toContain('token');
     expect(response.status).toBe(200);
@@ -121,30 +135,34 @@ describe('Post Sign In User', () => {
 });
 
 describe('Get Users', () => {
-  test('Should fail for unauthenticate user', async done => {
+  test('Should fail for unauthenticated user', async done => {
     const response = await request(app)
       .get('/users')
       .send();
-    expect(response.text).toContain('Please sign in');
     expect(response.status).toBe(401);
+    expect(response.text).toContain('Please sign in');
     done();
   });
 
-  test('Should work for authenticate user', async done => {
-    await request(app)
-      .post('/users')
-      .send(user.dataValues);
-    const { body } = await request(app)
-      .post('/users/sessions')
-      .send({
-        email: user.dataValues.email,
-        password: 'contrasena1234'
-      });
+  test('Should work for authenticated user', async done => {
+    const body = await loginNewUser(user);
     const response = await request(app)
       .get('/users')
       .set('Authorization', `${body.token}`)
       .send();
     expect(response.status).toBe(200);
+    done();
+  });
+
+  test('Should fail for wrong query params', async done => {
+    const body = await loginNewUser(user);
+    const response = await request(app)
+      .get('/users')
+      .query({ page: 'primera' })
+      .set('Authorization', `${body.token}`)
+      .send();
+    expect(response.status).toBe(422);
+    expect(response.text).toContain('page must be integer.');
     done();
   });
 });

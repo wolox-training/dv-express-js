@@ -1,28 +1,24 @@
 const jwt = require('jwt-simple');
 const db = require('../models');
+const errors = require('../errors');
 
 const createUser = body =>
-  new Promise((resolve, reject) => {
-    db.User.newUser(body)
-      .then(user => {
-        resolve(user);
-      })
-      .catch(error => {
-        reject(error);
-      });
-  });
+  db.User.newUser(body)
+    .then(user => user)
+    .catch(() => Promise.reject(errors.databaseError('The user could not be created.')));
 
-const access = async ({ email, password }) => {
+const authenticate = async ({ email, password }) => {
   try {
     const { dataValues: user } = await db.User.findByCredentials(email, password);
     const token = await jwt.encode({ id: user.id.toString() }, process.env.JWT_SECRET);
-    return Promise.resolve({ user: user.email, token });
+    return { user: user.email, token };
   } catch (error) {
-    return Promise.reject(error);
+    throw error;
   }
 };
 
-const getUsers = async ({ limit = 10, offset = 0 }) => {
+const getUsers = async ({ limit = 10, page = 0 }) => {
+  const offset = page * limit;
   try {
     const users = await db.User.findAll({ limit, offset });
     return Promise.resolve(users);
@@ -47,4 +43,4 @@ const createAdmin = async body => {
   }
 };
 
-module.exports = { createUser, access, getUsers, createAdmin };
+module.exports = { createUser, authenticate, getUsers, createAdmin };
