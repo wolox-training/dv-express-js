@@ -17,7 +17,7 @@ describe('Post Sign UP', () => {
       .post('/users')
       .send(user.dataValues);
     expect(response.status).toBe(201);
-    expect(response.text).toContain('esteban.herrera@wolox.co');
+    expect(response.text).toContain(user.dataValues.firstName);
     done();
   });
 
@@ -32,10 +32,10 @@ describe('Post Sign UP', () => {
   });
 
   test('Should fail for email in use', async done => {
-    await createUser();
+    const newUser = await createUser();
     const response = await request(app)
       .post('/users')
-      .send(user.dataValues);
+      .send(newUser.dataValues);
     expect(response.status).toBe(409);
     expect(response.text).toContain('Email is already');
     done();
