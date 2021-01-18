@@ -112,7 +112,7 @@ describe('Post Sign In User', () => {
       .post('/users/sessions')
       .send({
         email: user.dataValues.email,
-        password: 'contrasena1234'
+        password: user.dataValues.password
       });
     expect(response.text).toContain('token');
     expect(response.status).toBe(200);
