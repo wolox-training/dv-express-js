@@ -7,6 +7,19 @@ const { createUser, buildUser } = require('./factory/users');
 
 let user = '';
 
+const loginNewUser = async loginUser => {
+  await request(app)
+    .post('/users')
+    .send(loginUser.dataValues);
+  const { body } = await request(app)
+    .post('/users/sessions')
+    .send({
+      email: loginUser.dataValues.email,
+      password: loginUser.dataValues.password
+    });
+  return body;
+};
+
 beforeEach(async () => {
   await db.User.destroy({ truncate: { cascade: true } });
   user = await buildUser();
@@ -122,30 +135,34 @@ describe('Post Sign In User', () => {
 });
 
 describe('Get Users', () => {
-  test('Should fail for unauthenticate user', async done => {
+  test('Should fail for unauthenticated user', async done => {
     const response = await request(app)
       .get('/users')
       .send();
-    expect(response.text).toContain('Please sign in');
     expect(response.status).toBe(401);
+    expect(response.text).toContain('Please sign in');
     done();
   });
 
-  test('Should work for authenticate user', async done => {
-    await request(app)
-      .post('/users')
-      .send(user.dataValues);
-    const { body } = await request(app)
-      .post('/users/sessions')
-      .send({
-        email: user.dataValues.email,
-        password: 'contrasena1234'
-      });
+  test('Should work for authenticated user', async done => {
+    const body = await loginNewUser(user);
     const response = await request(app)
       .get('/users')
       .set('Authorization', `${body.token}`)
       .send();
     expect(response.status).toBe(200);
+    done();
+  });
+
+  test('Should fail for wrong query params', async done => {
+    const body = await loginNewUser(user);
+    const response = await request(app)
+      .get('/users')
+      .query({ page: 'primera' })
+      .set('Authorization', `${body.token}`)
+      .send();
+    expect(response.status).toBe(422);
+    expect(response.text).toContain('page must be integer.');
     done();
   });
 });

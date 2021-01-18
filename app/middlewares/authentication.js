@@ -2,7 +2,7 @@ const jwt = require('jwt-simple');
 const db = require('../models');
 const errors = require('../errors');
 
-const auth = async (req, _, next) => {
+const verifyAuthentication = async (req, _, next) => {
   try {
     const token = req.header('Authorization');
     const decode = await jwt.decode(token, process.env.JWT_SECRET);
@@ -15,4 +15,4 @@ const auth = async (req, _, next) => {
   }
 };
 
-module.exports = auth;
+module.exports = verifyAuthentication;
