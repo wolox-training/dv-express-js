@@ -18,7 +18,8 @@ describe('Post Sign UP', () => {
     const response = await request(app)
       .post('/users')
       .send(user.dataValues);
-    expect(response.text).toContain('esteban.herrera');
+    expect(response.status).toBe(201);
+    expect(response.text).toContain(user.dataValues.firstName);
     done();
   });
 
@@ -26,18 +27,18 @@ describe('Post Sign UP', () => {
     const invalidPassword = { ...user.dataValues, password: 'contra12*' };
     const response = await request(app)
       .post('/users')
-      .send(invalidPassword)
-      .expect(422);
-    expect(response.text).toContain('password');
+      .send(invalidPassword);
+    expect(response.status).toBe(422);
+    expect(response.text).toContain('Password must');
     done();
   });
 
   test('Should fail for email in use', async done => {
-    await createUser();
+    const newUser = await createUser();
     const response = await request(app)
       .post('/users')
-      .send(user.dataValues)
-      .expect(409);
+      .send(newUser.dataValues);
+    expect(response.status).toBe(409);
     expect(response.text).toContain('Email is already');
     done();
   });
@@ -45,9 +46,9 @@ describe('Post Sign UP', () => {
   test('Should fail for empty parameters', async done => {
     const response = await request(app)
       .post('/users')
-      .send()
-      .expect(422);
-    expect(response.text).toContain('empty');
+      .send();
+    expect(response.status).toBe(422);
+    expect(response.text).toContain('cannot be empty');
     done();
   });
 });

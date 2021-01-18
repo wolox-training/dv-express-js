@@ -1,16 +1,11 @@
 const jwt = require('jwt-simple');
 const db = require('../models');
+const errors = require('../errors');
 
 const createUser = body =>
-  new Promise((resolve, reject) => {
-    db.User.newUser(body)
-      .then(user => {
-        resolve(user);
-      })
-      .catch(error => {
-        reject(error);
-      });
-  });
+  db.User.newUser(body)
+    .then(user => user)
+    .catch(() => Promise.reject(errors.databaseError('The user could not be created.')));
 
 const access = async ({ email, password }) => {
   try {
