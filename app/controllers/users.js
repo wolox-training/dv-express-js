@@ -13,7 +13,7 @@ const signUp = async (req, res, next) => {
 
 const signIn = async (req, res, next) => {
   try {
-    const user = await usersService.access(req.body);
+    const user = await usersService.autheticate(req.body);
     return res.status(200).send(user);
   } catch (error) {
     return next(error);
