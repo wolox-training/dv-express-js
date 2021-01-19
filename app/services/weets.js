@@ -49,18 +49,30 @@ const readWeets = async ({ page = 1, limit = 5 }) => {
   }
 };
 
-const rating = async (ratingUserId, weetId, score) => {
+const prepareRating = async weetId => {
+  try {
+    const ratedWeet = await db.Weet.findOne({ where: { id: weetId } });
+    if (!ratedWeet) {
+      throw errors.notFoundError('Could not find the weet requested');
+    }
+    const weetsRatedUser = await db.Weet.findAll({
+      where: { userId: ratedWeet.dataValues.userId }
+    }).map(weet => weet.dataValues.id);
+
+    const ratedUser = await db.User.findOne({ where: { id: ratedWeet.dataValues.userId } });
+    return { weetsRatedUser, ratedUser };
+  } catch (error) {
+    throw error;
+  }
+};
+
+const postRating = async (ratingUserId, weetId, score, { weetsRatedUser, ratedUser }) => {
   const transaction = await db.sequelize.transaction();
   try {
-    const ratedWeet = await db.Weet.findOne({ where: { id: weetId }, transaction });
-    if (!ratedWeet) {
-      return Promise.reject(errors.notFoundError('Could not find the weet requested'));
-    }
-
     const alreadyRated = await db.Rating.findOne({ where: { ratingUserId, weetId }, transaction });
     if (alreadyRated) {
       if (alreadyRated.score === score) {
-        return Promise.reject(errors.badRequestError('You already rated this weet'));
+        throw errors.badRequestError('You already rated this weet');
       }
       alreadyRated.score = score;
       await alreadyRated.save({ transaction });
@@ -68,31 +80,27 @@ const rating = async (ratingUserId, weetId, score) => {
       await db.Rating.create({ ratingUserId, weetId, score }, { transaction });
     }
 
-    const userRatedWeets = await db.Weet.findAll({
-      where: { userId: ratedWeet.dataValues.userId },
-      transaction
-    }).map(weet => weet.dataValues.id);
     const totalPoints = await db.Rating.findAll({
-      where: { weetId: userRatedWeets },
+      where: { weetId: weetsRatedUser },
       transaction
     })
       .map(rate => rate.dataValues.score)
       .reduce((accumulator, currentValue) => accumulator + currentValue);
 
-    const userRated = await db.User.findOne({ where: { id: ratedWeet.dataValues.userId }, transaction });
-    await db.User.setPosition(userRated, totalPoints, { transaction });
+    await db.User.setPosition(ratedUser, totalPoints, { transaction });
 
     await transaction.commit();
-    return Promise.resolve();
-  } catch (err) {
+    return;
+  } catch (error) {
     if (transaction.rollback) await transaction.rollback();
-    throw err;
+    throw error;
   }
 };
 
 module.exports = {
   fetchWeet,
   readWeets,
-  rating,
-  createWeet
+  createWeet,
+  postRating,
+  prepareRating
 };

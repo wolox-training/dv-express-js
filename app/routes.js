@@ -4,7 +4,7 @@ const { healthCheck } = require('./controllers/healthCheck');
 const validateBySchema = require('./middlewares/validations');
 const { signUpSchema, signInSchema } = require('./schemas/users');
 const { rateWeetSchema } = require('./schemas/rateWeet');
-const paginationSchema = require('./schemas/query');
+const paginationSchema = require('./schemas/pagination');
 const verifyAuthentication = require('./middlewares/authentication');
 const checkIfEmailExists = require('./middlewares/emailValidation');
 
@@ -12,7 +12,7 @@ exports.init = app => {
   app.get('/health', healthCheck);
 
   app.post('/weets', verifyAuthentication, weetsController.generateWeet);
-  app.get('/weets', verifyAuthentication, weetsController.getWeets);
+  app.get('/weets', [verifyAuthentication, validateBySchema(paginationSchema)], weetsController.getWeets);
   app.post(
     '/weets/:id/ratings',
     [verifyAuthentication, validateBySchema(rateWeetSchema)],

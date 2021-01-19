@@ -21,13 +21,13 @@ const getWeets = async (req, res, next) => {
 
 const rateWeet = async (req, res, next) => {
   const {
-    params: { id },
+    params: { id: weetId },
     user: { id: ratingUserId },
     body: { score }
   } = req;
-  const weetId = Number(id);
   try {
-    await weetsService.rating(ratingUserId, weetId, score);
+    const prepareData = await weetsService.prepareRating(weetId);
+    await weetsService.postRating(ratingUserId, weetId, score, prepareData);
     return res.status(200).send({ message: 'Rating successfully stored' });
   } catch (error) {
     return next(error);
