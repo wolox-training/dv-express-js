@@ -1,19 +1,16 @@
-/* eslint-disable */
 const request = require('supertest');
 const api = require('../config/axios');
 
 const app = require('../app');
-const db = require('../app/models');
 const { buildUser } = require('./factory/users');
-const { createWeet } = require('./factory/weets');
+const { createWeet, createManyWeets } = require('./factory/weets');
+const loginNewUser = require('./loginNewUser');
 
 jest.mock('../config/axios');
 
 let user = '';
 
 beforeEach(async () => {
-  await db.User.destroy({ truncate: { cascade: true } });
-  await db.Weet.destroy({ truncate: { cascade: true } });
   user = await buildUser();
   jest.resetAllMocks();
 });
@@ -29,15 +26,7 @@ describe('Post Weet', () => {
   });
 
   test('Should create a weet', async done => {
-    await request(app)
-      .post('/users')
-      .send(user.dataValues);
-    const { body } = await request(app)
-      .post('/users/sessions')
-      .send({
-        email: user.dataValues.email,
-        password: 'contrasena1234'
-      });
+    const body = await loginNewUser(user.dataValues);
     await api.get.mockResolvedValue({ data: 'this weet is correct' });
     const response = await request(app)
       .post('/weets')
@@ -49,15 +38,7 @@ describe('Post Weet', () => {
   });
 
   test('Should fail for a weet with more tha 140 characters', async done => {
-    await request(app)
-      .post('/users')
-      .send(user.dataValues);
-    const { body } = await request(app)
-      .post('/users/sessions')
-      .send({
-        email: user.dataValues.email,
-        password: 'contrasena1234'
-      });
+    const body = await loginNewUser(user.dataValues);
     await api.get.mockResolvedValue({
       data:
         'this weet is tooooooooooooooooooooooooooooooooooooo looooooooooooooooooooooooooooooooonnnnnnnngggggggggg !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
@@ -82,15 +63,7 @@ describe('Get Weets', () => {
   });
 
   test('Should work without weets', async done => {
-    await request(app)
-      .post('/users')
-      .send(user.dataValues);
-    const { body } = await request(app)
-      .post('/users/sessions')
-      .send({
-        email: user.dataValues.email,
-        password: 'contrasena1234'
-      });
+    const body = await loginNewUser(user.dataValues);
     const response = await request(app)
       .get('/weets')
       .set('Authorization', `${body.token}`)
@@ -101,37 +74,20 @@ describe('Get Weets', () => {
   });
 
   test('Should get weets', async done => {
-    await request(app)
-      .post('/users')
-      .send(user.dataValues);
-    const { body } = await request(app)
-      .post('/users/sessions')
-      .send({
-        email: user.dataValues.email,
-        password: 'contrasena1234'
-      });
+    const body = await loginNewUser(user.dataValues);
     await createWeet();
     const response = await request(app)
       .get('/weets')
       .set('Authorization', `${body.token}`)
       .send()
       .expect(200);
-    expect(response.text).toContain('fake weet');
+    expect(response.text).toContain('weets');
     done();
   });
 
   test('Should get weets acording to query', async done => {
-    await request(app)
-      .post('/users')
-      .send(user.dataValues);
-    const { body } = await request(app)
-      .post('/users/sessions')
-      .send({
-        email: user.dataValues.email,
-        password: 'contrasena1234'
-      });
-    await createWeet();
-    await createWeet();
+    const body = await loginNewUser(user.dataValues);
+    await createManyWeets();
     const response = await request(app)
       .get('/weets')
       .set('Authorization', `${body.token}`)
@@ -143,21 +99,12 @@ describe('Get Weets', () => {
   });
 
   test('Should fail for invalid page value', async done => {
-    await request(app)
-      .post('/users')
-      .send(user.dataValues);
-    const { body } = await request(app)
-      .post('/users/sessions')
-      .send({
-        email: user.dataValues.email,
-        password: 'contrasena1234'
-      });
-    await createWeet();
-    await createWeet();
+    const body = await loginNewUser(user.dataValues);
+    await createManyWeets();
     const response = await request(app)
       .get('/weets')
       .set('Authorization', `${body.token}`)
-      .query({ page: 3, limit: 1 })
+      .query({ page: 3, limit: 2 })
       .send()
       .expect(400);
     expect(response.text).toContain('Page requested exceed the total of pages.');
