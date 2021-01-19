@@ -42,4 +42,14 @@ const postAdmin = async (req, res, next) => {
   }
 };
 
-module.exports = { signUp, signIn, getUsersList, postAdmin };
+const invalidateAllSessions = async (req, res, next) => {
+  const { id } = req.user;
+  try {
+    await usersService.logoutAll(id);
+    return res.status(204).send();
+  } catch (error) {
+    return next(error);
+  }
+};
+
+module.exports = { signUp, signIn, getUsersList, postAdmin, invalidateAllSessions };

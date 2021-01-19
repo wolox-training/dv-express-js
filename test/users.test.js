@@ -115,7 +115,6 @@ describe('Post Sign In User', () => {
       });
     expect(response.text).toContain('token');
     expect(response.status).toBe(200);
-
     done();
   });
 });
@@ -170,8 +169,8 @@ describe('Post User Admin', () => {
   test('Should fail for unauthenticated user', async done => {
     const response = await request(app)
       .post('/admin/users')
-      .send(user.dataValues)
-      .expect(401);
+      .send(user.dataValues);
+    expect(response.status).toBe(401);
     expect(response.text).toContain('Please sign in');
     done();
   });
@@ -196,6 +195,42 @@ describe('Post User Admin', () => {
       .send(differentUser.dataValues);
     expect(response.status).toBe(201);
     expect(response.text).toContain(differentUser.dataValues.email);
+    done();
+  });
+});
+
+describe('Post invalidate all sessions', () => {
+  test('Should fail for unauthenticated user', async done => {
+    const response = await request(app)
+      .post('/users/sessions/invalidate_all')
+      .send();
+    expect(response.status).toBe(401);
+    expect(response.text).toContain('Please sign in');
+    done();
+  });
+
+  test('Should invalidate all user sessions', async done => {
+    const body = await loginNewUser(user.dataValues);
+    const response = await request(app)
+      .post('/users/sessions/invalidate_all')
+      .set('Authorization', `${body.token}`)
+      .send();
+    expect(response.status).toBe(204);
+    done();
+  });
+
+  test('Should fail fot user with invalidate session', async done => {
+    const body = await loginNewUser(user.dataValues);
+    await request(app)
+      .post('/users/sessions/invalidate_all')
+      .set('Authorization', `${body.token}`)
+      .send();
+    const response = await request(app)
+      .post('/users/sessions/invalidate_all')
+      .set('Authorization', `${body.token}`)
+      .send();
+    expect(response.status).toBe(401);
+    expect(response.text).toContain('Please sign in');
     done();
   });
 });
