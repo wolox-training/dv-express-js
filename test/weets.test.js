@@ -3,7 +3,7 @@ const api = require('../config/axios');
 
 const app = require('../app');
 const { buildUser } = require('./factory/users');
-const { createWeet } = require('./factory/weets');
+const { createWeet, createManyWeets } = require('./factory/weets');
 const loginNewUser = require('./loginNewUser');
 
 jest.mock('../config/axios');
@@ -81,14 +81,13 @@ describe('Get Weets', () => {
       .set('Authorization', `${body.token}`)
       .send()
       .expect(200);
-    expect(response.text).toContain('fake weet');
+    expect(response.text).toContain('weets');
     done();
   });
 
   test('Should get weets acording to query', async done => {
     const body = await loginNewUser(user.dataValues);
-    await createWeet();
-    await createWeet();
+    await createManyWeets();
     const response = await request(app)
       .get('/weets')
       .set('Authorization', `${body.token}`)
@@ -101,12 +100,11 @@ describe('Get Weets', () => {
 
   test('Should fail for invalid page value', async done => {
     const body = await loginNewUser(user.dataValues);
-    await createWeet();
-    await createWeet();
+    await createManyWeets();
     const response = await request(app)
       .get('/weets')
       .set('Authorization', `${body.token}`)
-      .query({ page: 3, limit: 1 })
+      .query({ page: 3, limit: 2 })
       .send()
       .expect(400);
     expect(response.text).toContain('Page requested exceed the total of pages.');

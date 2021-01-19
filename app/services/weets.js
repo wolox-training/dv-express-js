@@ -27,7 +27,13 @@ const createWeet = async (user, content) => {
 const readWeets = async ({ page = 1, limit = 5 }) => {
   const offset = (page - 1) * limit;
   try {
-    const { count: totalItems, rows: weets } = await db.Weet.findAndCountAll({ limit, offset });
+    const { count: totalItems, rows: weets } = await db.Weet.findAndCountAll({
+      limit,
+      offset,
+      attributes: {
+        exclude: ['UserId']
+      }
+    });
     if (totalItems === 0) {
       return Promise.resolve({ noWeets: 'There are no weets to show.' });
     }
