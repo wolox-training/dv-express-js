@@ -17,13 +17,16 @@ const authenticate = async ({ email, password }) => {
   }
 };
 
-const getUsers = async ({ limit = 10, page = 0 }) => {
+const getUsers = async ({ limit = 5, page = 0 }) => {
   const offset = page * limit;
   try {
-    const users = await db.User.findAll({ limit, offset });
-    return Promise.resolve(users);
+    const data = await db.User.findAndCountAll({ limit, offset });
+    const { count: totalUsers, rows: users } = data;
+    const currentPage = page;
+    const totalPages = Math.ceil(totalUsers / limit);
+    return { totalUsers, users, totalPages, currentPage };
   } catch (error) {
-    return Promise.reject(error);
+    throw error;
   }
 };
 

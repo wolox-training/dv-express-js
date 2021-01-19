@@ -3,7 +3,7 @@ const request = require('supertest');
 const app = require('../app');
 const db = require('../app/models');
 // const { factoryByModel } = require('./factory/factory_by_models');
-const { createUser, buildUser } = require('./factory/users');
+const { createUser, buildUser, createMany } = require('./factory/users');
 
 let user = '';
 
@@ -163,6 +163,19 @@ describe('Get Users', () => {
       .send();
     expect(response.status).toBe(422);
     expect(response.text).toContain('page must be integer.');
+    done();
+  });
+
+  test('Should ', async done => {
+    await createMany();
+    const body = await loginNewUser(user);
+    const response = await request(app)
+      .get('/users')
+      .query({ page: 1, limit: 2 })
+      .set('Authorization', `${body.token}`)
+      .send();
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('currentPage":1');
     done();
   });
 });
