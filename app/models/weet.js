@@ -24,5 +24,8 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'weets-user'
     }
   );
+  Weet.associate = models => {
+    Weet.belongsTo(models.User);
+  };
   return Weet;
 };
