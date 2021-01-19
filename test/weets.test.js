@@ -94,7 +94,7 @@ describe('Get Weets', () => {
       .query({ page: 2, limit: 1 })
       .send()
       .expect(200);
-    expect(response.text).toContain('currentPage":"2');
+    expect(response.text).toContain('currentPage":2');
     done();
   });
 
