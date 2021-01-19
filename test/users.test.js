@@ -10,12 +10,12 @@ let user = '';
 const loginNewUser = async loginUser => {
   await request(app)
     .post('/users')
-    .send(loginUser.dataValues);
+    .send(loginUser);
   const { body } = await request(app)
     .post('/users/sessions')
     .send({
-      email: loginUser.dataValues.email,
-      password: loginUser.dataValues.password
+      email: loginUser.email,
+      password: loginUser.password
     });
   return body;
 };
@@ -145,7 +145,7 @@ describe('Get Users', () => {
   });
 
   test('Should work for authenticated user', async done => {
-    const body = await loginNewUser(user);
+    const body = await loginNewUser(user.dataValues);
     const response = await request(app)
       .get('/users')
       .set('Authorization', `${body.token}`)
@@ -155,7 +155,7 @@ describe('Get Users', () => {
   });
 
   test('Should fail for wrong query params', async done => {
-    const body = await loginNewUser(user);
+    const body = await loginNewUser(user.dataValues);
     const response = await request(app)
       .get('/users')
       .query({ page: 'primera' })
@@ -178,40 +178,24 @@ describe('Post User Admin', () => {
   });
 
   test('Should fail for unauthorized user', async done => {
-    await request(app)
-      .post('/users')
-      .send(user.dataValues);
-    const { body } = await request(app)
-      .post('/users/sessions')
-      .send({
-        email: user.dataValues.email,
-        password: 'contrasena1234'
-      });
+    const body = await loginNewUser(user.dataValues);
     const response = await request(app)
       .post('/admin/users')
       .set('Authorization', `${body.token}`)
-      .send(user.dataValues)
-      .expect(403);
+      .send(user.dataValues);
+    expect(response.status).toBe(403);
     expect(response.text).toContain('forbiden_module_error');
     done();
   });
 
   test('Should post admin for authorized user', async done => {
-    await request(app)
-      .post('/users')
-      .send({ ...user.dataValues, role: 'admin' });
-    const { body } = await request(app)
-      .post('/users/sessions')
-      .send({
-        email: user.dataValues.email,
-        password: 'contrasena1234'
-      });
-    const userDifferenteEmail = { ...user.dataValues, email: 'daniel.vega@wolox.co' };
+    const body = await loginNewUser({ ...user.dataValues, role: 'admin' });
+    const differentUser = await buildUser();
     const response = await request(app)
       .post('/admin/users')
       .set('Authorization', `${body.token}`)
-      .send(userDifferenteEmail)
-      .expect(201);
+      .send({ ...differentUser.dataValues, email: 'daniel.vega@wolox.co' });
+    expect(response.status).toBe(201);
     expect(response.text).toContain('daniel.vega@wolox.co');
     done();
   });

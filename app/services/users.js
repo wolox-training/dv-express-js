@@ -21,9 +21,9 @@ const getUsers = async ({ limit = 10, page = 0 }) => {
   const offset = page * limit;
   try {
     const users = await db.User.findAll({ limit, offset });
-    return Promise.resolve(users);
+    return users;
   } catch (error) {
-    return Promise.reject(error);
+    throw error;
   }
 };
 
@@ -33,13 +33,13 @@ const createAdmin = async body => {
     const user = await db.User.findOne({ where: { email } });
     if (!user) {
       const newUser = await db.User.newUser({ ...body, role: 'admin' });
-      return Promise.resolve(newUser);
+      return newUser;
     }
     user.role = 'admin';
     await user.save();
-    return Promise.resolve(user);
+    return user;
   } catch (error) {
-    return Promise.reject(error);
+    throw error;
   }
 };
 
