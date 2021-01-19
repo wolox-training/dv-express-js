@@ -34,17 +34,18 @@ const readWeets = async ({ page = 1, limit = 5 }) => {
         exclude: ['UserId']
       }
     });
+    if (!weets) throw errors.databaseError('Some error occurred while getting weets');
     if (totalItems === 0) {
-      return Promise.resolve({ noWeets: 'There are no weets to show.' });
+      return { noWeets: 'There are no weets to show.' };
     }
     const currentPage = page;
     const totalPages = Math.ceil(totalItems / limit);
     if (page > totalPages) {
-      return Promise.reject(errors.badRequestError('Page requested exceed the total of pages.'));
+      throw errors.badRequestError('Page requested exceed the total of pages.');
     }
-    return Promise.resolve({ totalItems, weets, totalPages, currentPage });
+    return { totalItems, weets, totalPages, currentPage };
   } catch (error) {
-    return Promise.reject(errors.databaseError('Some error occurred while getting weets'));
+    throw error;
   }
 };
 
