@@ -11,7 +11,7 @@ exports.init = app => {
   app.get('/health', healthCheck);
 
   app.post('/weets', verifyAuthentication, weetsController.generateWeet);
-  app.get('/weets', verifyAuthentication, weetsController.getWeets);
+  app.get('/weets', [verifyAuthentication, validateBySchema(paginationSchema)], weetsController.getWeets);
 
   app.post('/users', [validateBySchema(signUpSchema), checkIfEmailExists], usersController.signUp);
   app.post('/users/sessions', validateBySchema(signInSchema), usersController.signIn);
