@@ -16,11 +16,11 @@ beforeEach(async () => {
 });
 
 describe('Post Weet', () => {
-  test('Should fail for unauthenticate user', async done => {
+  test('Should fail for unauthenticated user', async done => {
     const response = await request(app)
       .post('/weets')
-      .send()
-      .expect(401);
+      .send();
+    expect(response.status).toBe(401);
     expect(response.text).toContain('Please sign in');
     done();
   });
@@ -31,8 +31,8 @@ describe('Post Weet', () => {
     const response = await request(app)
       .post('/weets')
       .set('Authorization', `${body.token}`)
-      .send()
-      .expect(201);
+      .send();
+    expect(response.status).toBe(201);
     expect(response.text).toContain('this weet is correct');
     done();
   });
@@ -53,11 +53,11 @@ describe('Post Weet', () => {
 });
 
 describe('Get Weets', () => {
-  test('Should fail for unauthenticate user', async done => {
+  test('Should fail for unauthenticated user', async done => {
     const response = await request(app)
       .get('/weets')
-      .send()
-      .expect(401);
+      .send();
+    expect(response.status).toBe(401);
     expect(response.text).toContain('Please sign in');
     done();
   });
@@ -67,8 +67,8 @@ describe('Get Weets', () => {
     const response = await request(app)
       .get('/weets')
       .set('Authorization', `${body.token}`)
-      .send()
-      .expect(200);
+      .send();
+    expect(response.status).toBe(200);
     expect(response.text).toContain('no weets to show');
     done();
   });
@@ -79,8 +79,8 @@ describe('Get Weets', () => {
     const response = await request(app)
       .get('/weets')
       .set('Authorization', `${body.token}`)
-      .send()
-      .expect(200);
+      .send();
+    expect(response.status).toBe(200);
     expect(response.text).toContain('weets');
     done();
   });
@@ -92,9 +92,9 @@ describe('Get Weets', () => {
       .get('/weets')
       .set('Authorization', `${body.token}`)
       .query({ page: 2, limit: 1 })
-      .send()
-      .expect(200);
-    expect(response.text).toContain('currentPage":"2');
+      .send();
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('currentPage":2');
     done();
   });
 
@@ -105,9 +105,54 @@ describe('Get Weets', () => {
       .get('/weets')
       .set('Authorization', `${body.token}`)
       .query({ page: 3, limit: 2 })
-      .send()
-      .expect(400);
+      .send();
+    expect(response.status).toBe(400);
     expect(response.text).toContain('Page requested exceed the total of pages.');
+    done();
+  });
+});
+
+describe('Post weets ratings', () => {
+  test('Should fail for unauthenticated user', async done => {
+    const response = await request(app)
+      .post('/weets/1/ratings')
+      .send();
+    expect(response.status).toBe(401);
+    expect(response.text).toContain('Please sign in');
+    done();
+  });
+
+  test('Should fail for inexistent weet', async done => {
+    const body = await loginNewUser(user.dataValues);
+    const response = await request(app)
+      .post('/weets/1/ratings')
+      .set('Authorization', `${body.token}`)
+      .send({ score: 1 });
+    expect(response.status).toBe(404);
+    expect(response.text).toContain('Could not find the weet requested');
+    done();
+  });
+
+  test('Should fail for invalid score and weetId', async done => {
+    const body = await loginNewUser(user.dataValues);
+    const response = await request(app)
+      .post('/weets/one/ratings')
+      .set('Authorization', `${body.token}`)
+      .send({ score: 0 });
+    expect(response.status).toBe(422);
+    expect(response.text).toContain('schema_validation_error');
+    done();
+  });
+
+  test('Should rate a weet', async done => {
+    const body = await loginNewUser(user.dataValues);
+    const weet = await createWeet();
+    const response = await request(app)
+      .post(`/weets/${weet.dataValues.id}/ratings`)
+      .set('Authorization', `${body.token}`)
+      .send({ score: 1 });
+    expect(response.status).toBe(201);
+    expect(response.text).toContain('Rating successfully stored');
     done();
   });
 });
