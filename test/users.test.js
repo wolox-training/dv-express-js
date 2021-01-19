@@ -1,27 +1,13 @@
 const request = require('supertest');
 
 const app = require('../app');
-const db = require('../app/models');
 // const { factoryByModel } = require('./factory/factory_by_models');
 const { createUser, buildUser, createMany } = require('./factory/users');
+const loginNewUser = require('./loginNewUser');
 
 let user = '';
 
-const loginNewUser = async loginUser => {
-  await request(app)
-    .post('/users')
-    .send(loginUser);
-  const { body } = await request(app)
-    .post('/users/sessions')
-    .send({
-      email: loginUser.email,
-      password: loginUser.password
-    });
-  return body;
-};
-
 beforeEach(async () => {
-  await db.User.destroy({ truncate: { cascade: true } });
   user = await buildUser();
 });
 

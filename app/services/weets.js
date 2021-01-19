@@ -2,24 +2,29 @@ const api = require('../../config/axios');
 const db = require('../models');
 const errors = require('../errors');
 
-const fetchWeet = async user => {
+const fetchWeet = async () => {
   try {
     const { data } = await api.get('/random');
+    if (!data) throw errors.databaseError('Could not connect with external api');
     if (data.length > 140) {
-      return Promise.reject(
-        errors.defaultError('The content of the weet exceeds 140 characters. Try again.')
-      );
+      throw errors.defaultError('The content of the weet exceeds 140 characters. Try again.');
     }
-    const created = await db.Weet.create({ userId: user.id, content: data });
-    if (!created) {
-      return Promise.reject(errors.databaseError('Weet could not be created in database.'));
-    }
-    return Promise.resolve(data);
+    return data;
   } catch (error) {
-    return Promise.reject(errors.databaseError('Could not establish connection with the api'));
+    throw error;
+  }
+};
+
+const createWeet = async (user, content) => {
+  try {
+    await db.Weet.create({ userId: user.id, content });
+    return { user: user.email, content };
+  } catch (error) {
+    throw errors.databaseError('Weet could not be created in database.');
   }
 };
 
 module.exports = {
-  fetchWeet
+  fetchWeet,
+  createWeet
 };

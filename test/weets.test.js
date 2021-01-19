@@ -1,18 +1,15 @@
-/* eslint-disable */
 const request = require('supertest');
 const api = require('../config/axios');
 
 const app = require('../app');
-const db = require('../app/models');
 const { buildUser } = require('./factory/users');
+const loginNewUser = require('./loginNewUser');
 
 jest.mock('../config/axios');
 
 let user = '';
 
 beforeEach(async () => {
-  await db.User.destroy({ truncate: { cascade: true } });
-  await db.Weet.destroy({ truncate: { cascade: true } });
   user = await buildUser();
   jest.resetAllMocks();
 });
@@ -28,15 +25,7 @@ describe('Post Weet', () => {
   });
 
   test('Should create a weet', async done => {
-    await request(app)
-      .post('/users')
-      .send(user.dataValues);
-    const { body } = await request(app)
-      .post('/users/sessions')
-      .send({
-        email: user.dataValues.email,
-        password: 'contrasena1234'
-      });
+    const body = await loginNewUser(user.dataValues);
     await api.get.mockResolvedValue({ data: 'this weet is correct' });
     const response = await request(app)
       .post('/weets')
@@ -48,15 +37,7 @@ describe('Post Weet', () => {
   });
 
   test('Should fail for a weet with more tha 140 characters', async done => {
-    await request(app)
-      .post('/users')
-      .send(user.dataValues);
-    const { body } = await request(app)
-      .post('/users/sessions')
-      .send({
-        email: user.dataValues.email,
-        password: 'contrasena1234'
-      });
+    const body = await loginNewUser(user.dataValues);
     await api.get.mockResolvedValue({
       data:
         'this weet is tooooooooooooooooooooooooooooooooooooo looooooooooooooooooooooooooooooooonnnnnnnngggggggggg !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
