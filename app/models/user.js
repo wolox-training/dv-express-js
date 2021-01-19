@@ -54,6 +54,11 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'users'
     }
   );
+  User.associate = models => {
+    User.hasMany(models.Weet, {
+      foreingKey: 'userId'
+    });
+  };
 
   User.newUser = async data => {
     const user = User.create({

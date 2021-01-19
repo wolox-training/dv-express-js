@@ -14,14 +14,14 @@ const signUp = async (req, res, next) => {
 
 const signIn = async (req, res, next) => {
   try {
-    const user = await usersService.access(req.body);
+    const user = await usersService.authenticate(req.body);
     return res.status(200).send(user);
   } catch (error) {
     return next(error);
   }
 };
 
-const usersList = async (req, res, next) => {
+const getUsersList = async (req, res, next) => {
   try {
     const users = await usersService.getUsers(req.query);
     return res.status(200).send(users);
@@ -30,8 +30,8 @@ const usersList = async (req, res, next) => {
   }
 };
 
-const admin = async (req, res, next) => {
-  if (req.user.role === 'user') {
+const postAdmin = async (req, res, next) => {
+  if (req.user.role !== 'admin') {
     return next(errors.forbidenModuleError('You have no access to this module.'));
   }
   try {
@@ -42,4 +42,4 @@ const admin = async (req, res, next) => {
   }
 };
 
-module.exports = { signUp, signIn, usersList, admin };
+module.exports = { signUp, signIn, getUsersList, postAdmin };
