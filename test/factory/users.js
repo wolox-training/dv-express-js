@@ -7,7 +7,7 @@ factory.define('User', db.User, {
   id: factory.sequence('user.id', n => n),
   firstName: faker.name.firstName(),
   lastName: faker.name.lastName(),
-  email: `${faker.internet.userName().toLocaleLowerCase()}@wolox.com`,
+  email: factory.sequence('user.email', n => `${faker.internet.userName().toLowerCase()}${n}@wolox.com`),
   password: faker.internet.password(10, false, /[0-9A-Z]/)
 });
 

@@ -1,9 +1,11 @@
+/* eslint-disable */
+
 const request = require('supertest');
 
 const app = require('../app');
 const db = require('../app/models');
 // const { factoryByModel } = require('./factory/factory_by_models');
-const { createUser, buildUser } = require('./factory/users');
+const { createUser, buildUser, createMany } = require('./factory/users');
 
 let user = '';
 
@@ -165,10 +167,23 @@ describe('Get Users', () => {
     expect(response.text).toContain('page must be integer.');
     done();
   });
+
+  test('Should get 2 users in page 1', async done => {
+    await createMany();
+    const body = await loginNewUser(user.dataValues);
+    const response = await request(app)
+      .get('/users')
+      .query({ page: 1, limit: 2 })
+      .set('Authorization', `${body.token}`)
+      .send();
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('currentPage":1');
+    done();
+  });
 });
 
 describe('Post User Admin', () => {
-  test('Should fail for unauthenticate user', async done => {
+  test('Should fail for unauthenticated user', async done => {
     const response = await request(app)
       .post('/admin/users')
       .send(user.dataValues)
@@ -194,9 +209,9 @@ describe('Post User Admin', () => {
     const response = await request(app)
       .post('/admin/users')
       .set('Authorization', `${body.token}`)
-      .send({ ...differentUser.dataValues, email: 'daniel.vega@wolox.co' });
+      .send(differentUser.dataValues);
     expect(response.status).toBe(201);
-    expect(response.text).toContain('daniel.vega@wolox.co');
+    expect(response.text).toContain(differentUser.dataValues.email);
     done();
   });
 });
