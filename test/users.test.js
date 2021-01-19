@@ -1,14 +1,13 @@
 const request = require('supertest');
 
 const app = require('../app');
-const db = require('../app/models');
 // const { factoryByModel } = require('./factory/factory_by_models');
-const { createUser, buildUser } = require('./factory/users');
+const { createUser, buildUser, createMany } = require('./factory/users');
+const loginNewUser = require('./loginNewUser');
 
 let user = '';
 
 beforeEach(async () => {
-  await db.User.destroy({ truncate: { cascade: true } });
   user = await buildUser();
 });
 
@@ -18,7 +17,8 @@ describe('Post Sign Up', () => {
     const response = await request(app)
       .post('/users')
       .send(user.dataValues);
-    expect(response.text).toContain('esteban.herrera');
+    expect(response.status).toBe(201);
+    expect(response.text).toContain(user.dataValues.firstName);
     done();
   });
 
@@ -26,18 +26,18 @@ describe('Post Sign Up', () => {
     const invalidPassword = { ...user.dataValues, password: 'contra12*' };
     const response = await request(app)
       .post('/users')
-      .send(invalidPassword)
-      .expect(422);
-    expect(response.text).toContain('password');
+      .send(invalidPassword);
+    expect(response.status).toBe(422);
+    expect(response.text).toContain('Password must');
     done();
   });
 
   test('Should fail for email in use', async done => {
-    await createUser();
+    const newUser = await createUser();
     const response = await request(app)
       .post('/users')
-      .send(user.dataValues)
-      .expect(409);
+      .send(newUser.dataValues);
+    expect(response.status).toBe(409);
     expect(response.text).toContain('Email is already');
     done();
   });
@@ -45,9 +45,9 @@ describe('Post Sign Up', () => {
   test('Should fail for empty parameters', async done => {
     const response = await request(app)
       .post('/users')
-      .send()
-      .expect(422);
-    expect(response.text).toContain('empty');
+      .send();
+    expect(response.status).toBe(422);
+    expect(response.text).toContain('cannot be empty');
     done();
   });
 });
@@ -111,7 +111,7 @@ describe('Post Sign In User', () => {
       .post('/users/sessions')
       .send({
         email: user.dataValues.email,
-        password: 'contrasena1234'
+        password: user.dataValues.password
       });
     expect(response.text).toContain('token');
     expect(response.status).toBe(200);
@@ -121,25 +121,17 @@ describe('Post Sign In User', () => {
 });
 
 describe('Get Users', () => {
-  test('Should fail for unauthenticate user', async done => {
+  test('Should fail for unauthenticated user', async done => {
     const response = await request(app)
       .get('/users')
       .send();
-    expect(response.text).toContain('Please sign in');
     expect(response.status).toBe(401);
+    expect(response.text).toContain('Please sign in');
     done();
   });
 
-  test('Should work for authenticate user', async done => {
-    await request(app)
-      .post('/users')
-      .send(user.dataValues);
-    const { body } = await request(app)
-      .post('/users/sessions')
-      .send({
-        email: user.dataValues.email,
-        password: 'contrasena1234'
-      });
+  test('Should work for authenticated user', async done => {
+    const body = await loginNewUser(user.dataValues);
     const response = await request(app)
       .get('/users')
       .set('Authorization', `${body.token}`)
@@ -147,10 +139,35 @@ describe('Get Users', () => {
     expect(response.status).toBe(200);
     done();
   });
+
+  test('Should fail for wrong query params', async done => {
+    const body = await loginNewUser(user.dataValues);
+    const response = await request(app)
+      .get('/users')
+      .query({ page: 'primera' })
+      .set('Authorization', `${body.token}`)
+      .send();
+    expect(response.status).toBe(422);
+    expect(response.text).toContain('page must be integer.');
+    done();
+  });
+
+  test('Should get 2 users in page 1', async done => {
+    await createMany();
+    const body = await loginNewUser(user.dataValues);
+    const response = await request(app)
+      .get('/users')
+      .query({ page: 1, limit: 2 })
+      .set('Authorization', `${body.token}`)
+      .send();
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('currentPage":1');
+    done();
+  });
 });
 
 describe('Post User Admin', () => {
-  test('Should fail for unauthenticate user', async done => {
+  test('Should fail for unauthenticated user', async done => {
     const response = await request(app)
       .post('/admin/users')
       .send(user.dataValues)
@@ -160,41 +177,25 @@ describe('Post User Admin', () => {
   });
 
   test('Should fail for unauthorized user', async done => {
-    await request(app)
-      .post('/users')
-      .send(user.dataValues);
-    const { body } = await request(app)
-      .post('/users/sessions')
-      .send({
-        email: user.dataValues.email,
-        password: 'contrasena1234'
-      });
+    const body = await loginNewUser(user.dataValues);
     const response = await request(app)
       .post('/admin/users')
       .set('Authorization', `${body.token}`)
-      .send(user.dataValues)
-      .expect(403);
+      .send(user.dataValues);
+    expect(response.status).toBe(403);
     expect(response.text).toContain('forbiden_module_error');
     done();
   });
 
   test('Should post admin for authorized user', async done => {
-    await request(app)
-      .post('/users')
-      .send({ ...user.dataValues, role: 'admin' });
-    const { body } = await request(app)
-      .post('/users/sessions')
-      .send({
-        email: user.dataValues.email,
-        password: 'contrasena1234'
-      });
-    const userDifferenteEmail = { ...user.dataValues, email: 'daniel.vega@wolox.co' };
+    const body = await loginNewUser({ ...user.dataValues, role: 'admin' });
+    const differentUser = await buildUser();
     const response = await request(app)
       .post('/admin/users')
       .set('Authorization', `${body.token}`)
-      .send(userDifferenteEmail)
-      .expect(201);
-    expect(response.text).toContain('daniel.vega@wolox.co');
+      .send(differentUser.dataValues);
+    expect(response.status).toBe(201);
+    expect(response.text).toContain(differentUser.dataValues.email);
     done();
   });
 });

@@ -26,14 +26,6 @@ module.exports = {
       password: {
         type: Sequelize.STRING,
         allowNull: false
-      },
-      role: {
-        type: Sequelize.ENUM,
-        values: ['admin', 'user']
-      },
-      position: {
-        type: Sequelize.ENUM,
-        values: ['Developer', 'Lead', 'TL', 'EM', 'HEAD', 'CEO']
       }
     });
   },
