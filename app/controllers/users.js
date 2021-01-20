@@ -30,7 +30,7 @@ const getUsersList = async (req, res, next) => {
   }
 };
 
-const postAdmin = async (req, res, next) => {
+const signUpAdminUser = async (req, res, next) => {
   if (req.user.role !== 'admin') {
     return next(errors.forbidenModuleError('You have no access to this module.'));
   }
@@ -42,4 +42,4 @@ const postAdmin = async (req, res, next) => {
   }
 };
 
-module.exports = { signUp, signIn, getUsersList, postAdmin };
+module.exports = { signUp, signIn, getUsersList, signUpAdminUser };
