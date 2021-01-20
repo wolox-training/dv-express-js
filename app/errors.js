@@ -20,3 +20,6 @@ exports.wrongCredentialsError = message => internalError(message, exports.WRONG_
 
 exports.FORBIDEN_MODULE_ERROR = 'forbiden_module_error';
 exports.forbidenModuleError = message => internalError(message, exports.FORBIDEN_MODULE_ERROR);
+
+exports.UNAUTHENTICATED_ERROR = 'unauthenticated_error';
+exports.unauthenticatedError = message => internalError(message, exports.UNAUTHENTICATED_ERROR);

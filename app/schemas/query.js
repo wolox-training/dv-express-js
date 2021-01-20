@@ -1,7 +1,7 @@
 const paginationSchema = {
   page: {
     in: ['query', 'params'],
-    isInt: { errorMessage: 'page must be integer.' },
+    isInt: { options: { min: 1 }, errorMessage: 'Page must be an integer greater than zero.' },
     toInt: true,
     optional: { options: { nullable: true } }
   },
