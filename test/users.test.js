@@ -172,7 +172,7 @@ describe('Get Users', () => {
     done();
   });
 
-  test('Should get page 1 of users', async done => {
+  test('Should get 2 users in page 1', async done => {
     await createMany();
     const body = await loginNewUser(user);
     const response = await request(app)
@@ -182,6 +182,43 @@ describe('Get Users', () => {
       .send();
     expect(response.status).toBe(200);
     expect(response.body.currentPage).toBe(1);
+    done();
+  });
+});
+
+describe('Post User Admin', () => {
+  test('Should fail for unauthenticated user', async done => {
+    const response = await request(app)
+      .post('/admin/users')
+      .send(user);
+    expect(response.status).toBe(401);
+    expect(response.body.internal_code).toBe('unauthenticated_error');
+    expect(response.body.message).toBe('Please sign in to access this module.');
+    done();
+  });
+
+  test('Should fail for unauthorized user', async done => {
+    const body = await loginNewUser(user);
+    const response = await request(app)
+      .post('/admin/users')
+      .set('Authorization', `${body.token}`)
+      .send(user);
+    expect(response.status).toBe(403);
+    expect(response.body.internal_code).toBe('forbiden_module_error');
+    expect(response.body.message).toBe('You have no access to this module.');
+    done();
+  });
+
+  test('Should post admin for authorized user', async done => {
+    const body = await loginNewUser({ ...user, role: 'admin' });
+    const differentUser = await attributes();
+    const response = await request(app)
+      .post('/admin/users')
+      .set('Authorization', `${body.token}`)
+      .send(differentUser);
+    expect(response.status).toBe(201);
+    expect(response.body.email).toBe(differentUser.email);
+    expect(response.body.role).toBe('admin');
     done();
   });
 });

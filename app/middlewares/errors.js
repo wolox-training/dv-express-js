@@ -9,7 +9,8 @@ const statusCodes = {
   [errors.WRONG_CREDENTIALS_ERROR]: 401,
   [errors.UNAUTHENTICATED_ERROR]: 401,
   [errors.SCHEMA_VALIDATION_ERROR]: 422,
-  [errors.REGISTERED_EMAIL_ERROR]: 409
+  [errors.REGISTERED_EMAIL_ERROR]: 409,
+  [errors.FORBIDEN_MODULE_ERROR]: 403
 };
 
 exports.handle = (error, req, res, next) => {

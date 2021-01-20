@@ -31,4 +31,20 @@ const getUsers = async ({ limit = 5, page = 1 }) => {
   }
 };
 
-module.exports = { createUser, authenticate, getUsers };
+const createAdmin = async body => {
+  const { email } = body;
+  try {
+    const user = await db.User.findOne({ where: { email } });
+    if (!user) {
+      const newUser = await db.User.newUser({ ...body, role: 'admin' });
+      return newUser;
+    }
+    user.role = 'admin';
+    await user.save();
+    return user;
+  } catch (error) {
+    throw error;
+  }
+};
+
+module.exports = { createUser, authenticate, getUsers, createAdmin };
