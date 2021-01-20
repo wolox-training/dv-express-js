@@ -2,13 +2,13 @@ const request = require('supertest');
 
 const app = require('../app');
 // const { factoryByModel } = require('./factory/factory_by_models');
-const { createUser, buildUser, createMany } = require('./factory/users');
 const loginNewUser = require('./loginNewUser');
+const { createUser, createMany, attributes } = require('./factory/users');
 
 let user = '';
 
 beforeEach(async () => {
-  user = await buildUser();
+  user = await attributes();
 });
 
 describe('Post Sign Up', () => {
@@ -16,19 +16,20 @@ describe('Post Sign Up', () => {
     // const user = await factoryByModel('User');
     const response = await request(app)
       .post('/users')
-      .send(user.dataValues);
+      .send(user);
     expect(response.status).toBe(201);
-    expect(response.text).toContain(user.dataValues.firstName);
+    expect(response.body.email).toBe(user.email);
     done();
   });
 
   test('Should fail for invalid password', async done => {
-    const invalidPassword = { ...user.dataValues, password: 'contra12*' };
+    const invalidPassword = { ...user, password: 'contra12*' };
     const response = await request(app)
       .post('/users')
       .send(invalidPassword);
     expect(response.status).toBe(422);
-    expect(response.text).toContain('Password must');
+    expect(response.body.internal_code).toBe('schema_validation_error');
+    expect(response.body.message.password.msg).toEqual('Password must be alphanumeric.');
     done();
   });
 
@@ -38,7 +39,8 @@ describe('Post Sign Up', () => {
       .post('/users')
       .send(newUser.dataValues);
     expect(response.status).toBe(409);
-    expect(response.text).toContain('Email is already');
+    expect(response.body.internal_code).toBe('registered_email_error');
+    expect(response.body.message).toBe('Email is already registered.');
     done();
   });
 
@@ -47,7 +49,8 @@ describe('Post Sign Up', () => {
       .post('/users')
       .send();
     expect(response.status).toBe(422);
-    expect(response.text).toContain('cannot be empty');
+    expect(response.body.internal_code).toBe('schema_validation_error');
+    expect(response.body.message.firstName.msg).toBe('First name cannot be empty!');
     done();
   });
 });
@@ -61,7 +64,8 @@ describe('Post Sign In User', () => {
         password: 'password'
       });
     expect(response.status).toBe(401);
-    expect(response.text).toContain('Unable to login');
+    expect(response.body.internal_code).toBe('wrong_credentials_error');
+    expect(response.body.message).toBe('Unable to login.');
     done();
   });
 
@@ -73,7 +77,8 @@ describe('Post Sign In User', () => {
         password: ''
       });
     expect(response.status).toBe(422);
-    expect(response.text).toContain('empty');
+    expect(response.body.internal_code).toBe('schema_validation_error');
+    expect(response.body.message.password.msg).toBe('Password cannot be empty!');
     done();
   });
 
@@ -86,11 +91,12 @@ describe('Post Sign In User', () => {
         password: 'asfe'
       });
     expect(response.status).toBe(401);
-    expect(response.text).toContain('Unable to login');
+    expect(response.body.internal_code).toBe('wrong_credentials_error');
+    expect(response.body.message).toBe('Unable to login.');
     done();
   });
 
-  test('Should not sign in email that does no belog wolox', async done => {
+  test('Should not sign in email that does not belong wolox', async done => {
     const newUser = await createUser();
     const response = await request(app)
       .post('/users/sessions')
@@ -99,22 +105,23 @@ describe('Post Sign In User', () => {
         password: newUser.dataValues.password
       });
     expect(response.status).toBe(422);
-    expect(response.text).toContain('wolox domain');
+    expect(response.body.internal_code).toBe('schema_validation_error');
+    expect(response.body.message.email.msg).toBe('Email does not belong wolox domain.');
     done();
   });
 
   test('Should sign in user', async done => {
     await request(app)
       .post('/users')
-      .send(user.dataValues);
+      .send(user);
     const response = await request(app)
       .post('/users/sessions')
       .send({
-        email: user.dataValues.email,
-        password: user.dataValues.password
+        email: user.email,
+        password: user.password
       });
-    expect(response.text).toContain('token');
     expect(response.status).toBe(200);
+    expect(response.body.token).toBeTruthy();
 
     done();
   });
@@ -126,42 +133,45 @@ describe('Get Users', () => {
       .get('/users')
       .send();
     expect(response.status).toBe(401);
-    expect(response.text).toContain('Please sign in');
+    expect(response.body.internal_code).toBe('unauthenticated_error');
+    expect(response.body.message).toBe('Please sign in to access this module.');
     done();
   });
 
   test('Should work for authenticated user', async done => {
-    const body = await loginNewUser(user.dataValues);
+    const body = await loginNewUser(user);
     const response = await request(app)
       .get('/users')
       .set('Authorization', `${body.token}`)
       .send();
     expect(response.status).toBe(200);
+    expect(response.body.users).toBeTruthy();
     done();
   });
 
   test('Should fail for wrong query params', async done => {
-    const body = await loginNewUser(user.dataValues);
+    const body = await loginNewUser(user);
     const response = await request(app)
       .get('/users')
       .query({ page: 'primera' })
       .set('Authorization', `${body.token}`)
       .send();
     expect(response.status).toBe(422);
-    expect(response.text).toContain('page must be integer.');
+    expect(response.body.internal_code).toBe('schema_validation_error');
+    expect(response.body.message.page.msg).toBe('Page must be an integer greater than zero.');
     done();
   });
 
   test('Should get 2 users in page 1', async done => {
     await createMany();
-    const body = await loginNewUser(user.dataValues);
+    const body = await loginNewUser(user);
     const response = await request(app)
       .get('/users')
       .query({ page: 1, limit: 2 })
       .set('Authorization', `${body.token}`)
       .send();
     expect(response.status).toBe(200);
-    expect(response.text).toContain('currentPage":1');
+    expect(response.body.currentPage).toBe(1);
     done();
   });
 });
@@ -170,32 +180,35 @@ describe('Post User Admin', () => {
   test('Should fail for unauthenticated user', async done => {
     const response = await request(app)
       .post('/admin/users')
-      .send(user.dataValues)
-      .expect(401);
-    expect(response.text).toContain('Please sign in');
+      .send(user);
+    expect(response.status).toBe(401);
+    expect(response.body.internal_code).toBe('unauthenticated_error');
+    expect(response.body.message).toBe('Please sign in to access this module.');
     done();
   });
 
   test('Should fail for unauthorized user', async done => {
-    const body = await loginNewUser(user.dataValues);
+    const body = await loginNewUser(user);
     const response = await request(app)
       .post('/admin/users')
       .set('Authorization', `${body.token}`)
-      .send(user.dataValues);
+      .send(user);
     expect(response.status).toBe(403);
-    expect(response.text).toContain('forbiden_module_error');
+    expect(response.body.internal_code).toBe('forbiden_module_error');
+    expect(response.body.message).toBe('You have no access to this module.');
     done();
   });
 
   test('Should post admin for authorized user', async done => {
-    const body = await loginNewUser({ ...user.dataValues, role: 'admin' });
-    const differentUser = await buildUser();
+    const body = await loginNewUser({ ...user, role: 'admin' });
+    const differentUser = await attributes();
     const response = await request(app)
       .post('/admin/users')
       .set('Authorization', `${body.token}`)
-      .send(differentUser.dataValues);
+      .send(differentUser);
     expect(response.status).toBe(201);
-    expect(response.text).toContain(differentUser.dataValues.email);
+    expect(response.body.email).toBe(differentUser.email);
+    expect(response.body.role).toBe('admin');
     done();
   });
 });
