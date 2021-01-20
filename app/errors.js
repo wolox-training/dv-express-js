@@ -17,3 +17,6 @@ exports.registeredEmailError = message => internalError(message, exports.REGISTE
 
 exports.WRONG_CREDENTIALS_ERROR = 'wrong_credentials_error';
 exports.wrongCredentialsError = message => internalError(message, exports.WRONG_CREDENTIALS_ERROR);
+
+exports.UNAUTHENTICATED_ERROR = 'unauthenticated_error';
+exports.unauthenticatedError = message => internalError(message, exports.UNAUTHENTICATED_ERROR);

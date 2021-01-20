@@ -1,30 +1,39 @@
 const request = require('supertest');
 
 const app = require('../app');
-const db = require('../app/models');
-// const { factoryByModel } = require('./factory/factory_by_models');
-const { createUser, buildUser } = require('./factory/users');
+const { createUser, createMany, attributes } = require('./factory/users');
 
 let user = '';
 
+const loginNewUser = async loginUser => {
+  await request(app)
+    .post('/users')
+    .send(loginUser);
+  const { body } = await request(app)
+    .post('/users/sessions')
+    .send({
+      email: loginUser.email,
+      password: loginUser.password
+    });
+  return body;
+};
+
 beforeEach(async () => {
-  await db.User.destroy({ truncate: { cascade: true } });
-  user = await buildUser();
+  user = await attributes();
 });
 
 describe('Post Sign Up', () => {
   test('Should sign up a new user', async done => {
-    // const user = await factoryByModel('User');
     const response = await request(app)
       .post('/users')
-      .send(user.dataValues);
+      .send(user);
     expect(response.status).toBe(201);
-    expect(response.body.email).toBe(user.dataValues.email);
+    expect(response.body.email).toBe(user.email);
     done();
   });
 
   test('Should fail for invalid password', async done => {
-    const invalidPassword = { ...user.dataValues, password: 'contra12*' };
+    const invalidPassword = { ...user, password: 'contra12*' };
     const response = await request(app)
       .post('/users')
       .send(invalidPassword);
@@ -114,16 +123,65 @@ describe('Post Sign In User', () => {
   test('Should sign in user', async done => {
     await request(app)
       .post('/users')
-      .send(user.dataValues);
+      .send(user);
     const response = await request(app)
       .post('/users/sessions')
       .send({
-        email: user.dataValues.email,
-        password: user.dataValues.password
+        email: user.email,
+        password: user.password
       });
     expect(response.status).toBe(200);
     expect(response.body.token).toBeTruthy();
 
+    done();
+  });
+});
+
+describe('Get Users', () => {
+  test('Should fail for unauthenticated user', async done => {
+    const response = await request(app)
+      .get('/users')
+      .send();
+    expect(response.status).toBe(401);
+    expect(response.body.internal_code).toBe('unauthenticated_error');
+    expect(response.body.message).toBe('Please sign in to access this module.');
+    done();
+  });
+
+  test('Should work for authenticated user', async done => {
+    const body = await loginNewUser(user);
+    const response = await request(app)
+      .get('/users')
+      .set('Authorization', `${body.token}`)
+      .send();
+    expect(response.status).toBe(200);
+    expect(response.body.users.length).toBe(1);
+    done();
+  });
+
+  test('Should fail for wrong query params', async done => {
+    const body = await loginNewUser(user);
+    const response = await request(app)
+      .get('/users')
+      .query({ page: 'primera' })
+      .set('Authorization', `${body.token}`)
+      .send();
+    expect(response.status).toBe(422);
+    expect(response.body.internal_code).toBe('schema_validation_error');
+    expect(response.body.message.page.msg).toBe('Page must be an integer greater than zero.');
+    done();
+  });
+
+  test('Should get page 1 of users', async done => {
+    await createMany();
+    const body = await loginNewUser(user);
+    const response = await request(app)
+      .get('/users')
+      .query({ page: 1, limit: 2 })
+      .set('Authorization', `${body.token}`)
+      .send();
+    expect(response.status).toBe(200);
+    expect(response.body.currentPage).toBe(1);
     done();
   });
 });

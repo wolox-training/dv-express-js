@@ -3,6 +3,8 @@ const usersController = require('./controllers/users');
 const { healthCheck } = require('./controllers/healthCheck');
 const validateBySchema = require('./middlewares/validations');
 const { signUpSchema, signInSchema } = require('./schemas/users');
+const paginationSchema = require('./schemas/query');
+const verifyAuthentication = require('./middlewares/authentication');
 const checkIfEmailExists = require('./middlewares/emailValidation');
 
 exports.init = app => {
@@ -11,6 +13,5 @@ exports.init = app => {
 
   app.post('/users', [validateBySchema(signUpSchema), checkIfEmailExists], usersController.signUp);
   app.post('/users/sessions', validateBySchema(signInSchema), usersController.signIn);
-  // app.put('/endpoint/put/path', [], controller.methodPUT);
-  // app.post('/endpoint/post/path', [], controller.methodPOST);
+  app.get('/users', [verifyAuthentication, validateBySchema(paginationSchema)], usersController.getUsersList);
 };
