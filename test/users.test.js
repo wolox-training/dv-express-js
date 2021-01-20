@@ -1,7 +1,6 @@
 const request = require('supertest');
 
 const app = require('../app');
-// const { factoryByModel } = require('./factory/factory_by_models');
 const loginNewUser = require('./loginNewUser');
 const { createUser, createMany, attributes } = require('./factory/users');
 
@@ -13,7 +12,6 @@ beforeEach(async () => {
 
 describe('Post Sign Up', () => {
   test('Should sign up a new user', async done => {
-    // const user = await factoryByModel('User');
     const response = await request(app)
       .post('/users')
       .send(user);
@@ -145,7 +143,7 @@ describe('Get Users', () => {
       .set('Authorization', `${body.token}`)
       .send();
     expect(response.status).toBe(200);
-    expect(response.body.users).toBeTruthy();
+    expect(response.body.users.length).toBe(1);
     done();
   });
 
