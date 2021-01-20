@@ -108,7 +108,7 @@ describe('Post Sign In User', () => {
     done();
   });
 
-  test('Should not sign in email that does no belog wolox', async done => {
+  test('Should not sign in email that does not belong wolox', async done => {
     const newUser = await createUser();
     const response = await request(app)
       .post('/users/sessions')
