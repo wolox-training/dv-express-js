@@ -12,7 +12,7 @@ beforeEach(async () => {
   user = await buildUser();
 });
 
-describe('Post Sign UP', () => {
+describe('Post Sign Up', () => {
   test('Should sign up a new user', async done => {
     // const user = await factoryByModel('User');
     const response = await request(app)
@@ -97,7 +97,7 @@ describe('Post Sign In User', () => {
     done();
   });
 
-  test('Should not sign in email that does no belog wolox', async done => {
+  test('Should not sign in email that does not belong wolox', async done => {
     const newUser = await createUser();
     const response = await request(app)
       .post('/users/sessions')

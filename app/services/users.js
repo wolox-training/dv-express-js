@@ -7,7 +7,7 @@ const createUser = body =>
     .then(user => user)
     .catch(() => Promise.reject(errors.databaseError('The user could not be created.')));
 
-const autheticate = async ({ email, password }) => {
+const authenticate = async ({ email, password }) => {
   try {
     const { dataValues: user } = await db.User.findByCredentials(email, password);
     const token = await jwt.encode({ userId: user.id.toString() }, process.env.JWT_SECRET);
@@ -17,4 +17,4 @@ const autheticate = async ({ email, password }) => {
   }
 };
 
-module.exports = { createUser, autheticate };
+module.exports = { createUser, authenticate };
