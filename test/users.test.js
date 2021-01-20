@@ -65,7 +65,8 @@ describe('Post Sign In User', () => {
         password: 'password'
       });
     expect(response.status).toBe(401);
-    expect(response.text).toContain('Unable to login');
+    expect(response.body.internal_code).toBe('wrong_credentials_error');
+    expect(response.body.message).toBe('Unable to login.');
     done();
   });
 
@@ -77,7 +78,8 @@ describe('Post Sign In User', () => {
         password: ''
       });
     expect(response.status).toBe(422);
-    expect(response.text).toContain('empty');
+    expect(response.body.internal_code).toBe('schema_validation_error');
+    expect(response.body.message.password.msg).toBe('Password cannot be empty!');
     done();
   });
 
@@ -90,7 +92,8 @@ describe('Post Sign In User', () => {
         password: 'asfe'
       });
     expect(response.status).toBe(401);
-    expect(response.text).toContain('Unable to login');
+    expect(response.body.internal_code).toBe('wrong_credentials_error');
+    expect(response.body.message).toBe('Unable to login.');
     done();
   });
 
@@ -103,7 +106,8 @@ describe('Post Sign In User', () => {
         password: newUser.dataValues.password
       });
     expect(response.status).toBe(422);
-    expect(response.text).toContain('wolox domain');
+    expect(response.body.internal_code).toBe('schema_validation_error');
+    expect(response.body.message.email.msg).toBe('Email does not belong wolox domain.');
     done();
   });
 
@@ -117,8 +121,8 @@ describe('Post Sign In User', () => {
         email: user.dataValues.email,
         password: user.dataValues.password
       });
-    expect(response.text).toContain('token');
     expect(response.status).toBe(200);
+    expect(response.body.token).toBeTruthy();
 
     done();
   });
