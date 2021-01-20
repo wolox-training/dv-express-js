@@ -11,4 +11,13 @@ const signUp = async (req, res, next) => {
   }
 };
 
-module.exports = { signUp };
+const signIn = async (req, res, next) => {
+  try {
+    const user = await usersService.authenticate(req.body);
+    return res.status(200).send(user);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+module.exports = { signUp, signIn };

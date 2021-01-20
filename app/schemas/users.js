@@ -28,4 +28,22 @@ const signUpSchema = {
   }
 };
 
-module.exports = signUpSchema;
+const signInSchema = {
+  email: {
+    exists: true,
+    isEmail: { errorMessage: 'Not a valid email.' },
+    matches: {
+      options: [/^[\w-.]+@wolox(.)+[(co|ar|cl|mx)]{2,2}$/],
+      errorMessage: 'Email does not belong wolox domain.'
+    },
+    notEmpty: { errorMessage: 'email cannot be empty!' },
+    trim: true,
+    toLowerCase: true
+  },
+  password: {
+    exists: true,
+    notEmpty: { errorMessage: 'Password cannot be empty!' }
+  }
+};
+
+module.exports = { signUpSchema, signInSchema };

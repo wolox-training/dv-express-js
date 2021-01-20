@@ -1,16 +1,18 @@
 const request = require('supertest');
 
 const app = require('../app');
+const db = require('../app/models');
 // const { factoryByModel } = require('./factory/factory_by_models');
 const { createUser, buildUser } = require('./factory/users');
 
 let user = '';
 
 beforeEach(async () => {
+  await db.User.destroy({ truncate: { cascade: true } });
   user = await buildUser();
 });
 
-describe('Post Sign UP', () => {
+describe('Post Sign Up', () => {
   test('Should sign up a new user', async done => {
     // const user = await factoryByModel('User');
     const response = await request(app)
@@ -50,6 +52,78 @@ describe('Post Sign UP', () => {
     expect(response.status).toBe(422);
     expect(response.body.internal_code).toBe('schema_validation_error');
     expect(response.body.message.firstName.msg).toBe('First name cannot be empty!');
+    done();
+  });
+});
+
+describe('Post Sign In User', () => {
+  test('Should not sign in nonexixtent user', async done => {
+    const response = await request(app)
+      .post('/users/sessions')
+      .send({
+        email: 'daniel.vega@wolox.co',
+        password: 'password'
+      });
+    expect(response.status).toBe(401);
+    expect(response.body.internal_code).toBe('wrong_credentials_error');
+    expect(response.body.message).toBe('Unable to login.');
+    done();
+  });
+
+  test('Should not sign in empty params', async done => {
+    const response = await request(app)
+      .post('/users/sessions')
+      .send({
+        email: '',
+        password: ''
+      });
+    expect(response.status).toBe(422);
+    expect(response.body.internal_code).toBe('schema_validation_error');
+    expect(response.body.message.password.msg).toBe('Password cannot be empty!');
+    done();
+  });
+
+  test('Should not sign in with wrong password', async done => {
+    const newUser = await createUser();
+    const response = await request(app)
+      .post('/users/sessions')
+      .send({
+        email: newUser.dataValues.email,
+        password: 'asfe'
+      });
+    expect(response.status).toBe(401);
+    expect(response.body.internal_code).toBe('wrong_credentials_error');
+    expect(response.body.message).toBe('Unable to login.');
+    done();
+  });
+
+  test('Should not sign in email that does not belong wolox', async done => {
+    const newUser = await createUser();
+    const response = await request(app)
+      .post('/users/sessions')
+      .send({
+        email: 'esteban.herrara@gmail.com',
+        password: newUser.dataValues.password
+      });
+    expect(response.status).toBe(422);
+    expect(response.body.internal_code).toBe('schema_validation_error');
+    expect(response.body.message.email.msg).toBe('Email does not belong wolox domain.');
+    done();
+  });
+
+  test('Should sign in user', async done => {
+    await request(app)
+      .post('/users')
+      .send(user.dataValues);
+    const response = await request(app)
+      .post('/users/sessions')
+      .send({
+        email: user.dataValues.email,
+        password: user.dataValues.password
+      });
+    expect(response.status).toBe(200);
+    expect(response.body.token).toBeTruthy();
+
     done();
   });
 });
