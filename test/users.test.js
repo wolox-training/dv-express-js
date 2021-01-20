@@ -19,7 +19,7 @@ describe('Post Sign UP', () => {
       .post('/users')
       .send(user.dataValues);
     expect(response.status).toBe(201);
-    expect(response.text).toContain(user.dataValues.firstName);
+    expect(response.body.email).toBe(user.dataValues.email);
     done();
   });
 
@@ -29,7 +29,8 @@ describe('Post Sign UP', () => {
       .post('/users')
       .send(invalidPassword);
     expect(response.status).toBe(422);
-    expect(response.text).toContain('Password must');
+    expect(response.body.internal_code).toBe('schema_validation_error');
+    expect(response.body.message.password.msg).toEqual('Password must be alphanumeric.');
     done();
   });
 
@@ -39,7 +40,8 @@ describe('Post Sign UP', () => {
       .post('/users')
       .send(newUser.dataValues);
     expect(response.status).toBe(409);
-    expect(response.text).toContain('Email is already');
+    expect(response.body.internal_code).toBe('registered_email_error');
+    expect(response.body.message).toBe('Email is already registered.');
     done();
   });
 
@@ -48,7 +50,8 @@ describe('Post Sign UP', () => {
       .post('/users')
       .send();
     expect(response.status).toBe(422);
-    expect(response.text).toContain('cannot be empty');
+    expect(response.body.internal_code).toBe('schema_validation_error');
+    expect(response.body.message.firstName.msg).toBe('First name cannot be empty!');
     done();
   });
 });
