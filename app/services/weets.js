@@ -5,9 +5,9 @@ const errors = require('../errors');
 const fetchWeet = async () => {
   try {
     const { data } = await api.get('/random');
-    if (!data) throw errors.databaseError('Could not connect with external api');
+    if (!data) throw errors.withoutConnectionError('Could not connect with numbers api');
     if (data.length > 140) {
-      throw errors.defaultError('The content of the weet exceeds 140 characters. Try again.');
+      throw errors.invalidWeetError('The content of the weet exceeds 140 characters. Try again.');
     }
     return data;
   } catch (error) {

@@ -10,7 +10,9 @@ const statusCodes = {
   [errors.UNAUTHENTICATED_ERROR]: 401,
   [errors.SCHEMA_VALIDATION_ERROR]: 422,
   [errors.REGISTERED_EMAIL_ERROR]: 409,
-  [errors.FORBIDEN_MODULE_ERROR]: 403
+  [errors.FORBIDEN_MODULE_ERROR]: 403,
+  [errors.WITHOUT_CONNECTION_ERROR]: 503,
+  [errors.INVALID_WEET_ERROR]: 422
 };
 
 exports.handle = (error, req, res, next) => {

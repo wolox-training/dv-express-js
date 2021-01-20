@@ -3,7 +3,7 @@ const api = require('../config/axios');
 
 const app = require('../app');
 const { attributes } = require('./factory/users');
-const loginNewUser = require('./loginNewUser');
+const loginNewUser = require('./utils/users');
 
 jest.mock('../config/axios');
 
@@ -27,7 +27,7 @@ describe('Post Weet', () => {
 
   test('Should create a weet', async done => {
     const body = await loginNewUser(user);
-    await api.get.mockResolvedValue({ data: 'this weet is correct' });
+    api.get.mockResolvedValue({ data: 'this weet is correct' });
     const response = await request(app)
       .post('/weets')
       .set('Authorization', `${body.token}`)
@@ -39,7 +39,7 @@ describe('Post Weet', () => {
 
   test('Should fail for a weet with more tha 140 characters', async done => {
     const body = await loginNewUser(user);
-    await api.get.mockResolvedValue({
+    api.get.mockResolvedValue({
       data:
         'this weet is tooooooooooooooooooooooooooooooooooooo looooooooooooooooooooooooooooooooonnnnnnnngggggggggg !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     });
@@ -47,7 +47,7 @@ describe('Post Weet', () => {
       .post('/weets')
       .set('Authorization', `${body.token}`)
       .send();
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(422);
     expect(response.body.message).toBe('The content of the weet exceeds 140 characters. Try again.');
     done();
   });

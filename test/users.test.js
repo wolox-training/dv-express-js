@@ -1,7 +1,7 @@
 const request = require('supertest');
 
 const app = require('../app');
-const loginNewUser = require('./loginNewUser');
+const loginNewUser = require('./utils/users');
 const { createUser, createMany, attributes } = require('./factory/users');
 
 let user = '';
