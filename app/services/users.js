@@ -17,8 +17,8 @@ const authenticate = async ({ email, password }) => {
   }
 };
 
-const getUsers = async ({ limit = 5, page = 0 }) => {
-  const offset = page * limit;
+const getUsers = async ({ limit = 5, page = 1 }) => {
+  const offset = (page - 1) * limit;
   try {
     const data = await db.User.findAndCountAll({ limit, offset });
     const { count: totalUsers, rows: users } = data;

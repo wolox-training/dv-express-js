@@ -11,7 +11,7 @@ const verifyAuthentication = async (req, _, next) => {
     // req.user = user;
     return next();
   } catch (error) {
-    return next(errors.wrongCredentialsError('Please sign in to access this module.'));
+    return next(errors.unauthenticatedError('Please sign in to access this module.'));
   }
 };
 

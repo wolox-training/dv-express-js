@@ -7,6 +7,7 @@ const statusCodes = {
   [errors.DATABASE_ERROR]: 503,
   [errors.DEFAULT_ERROR]: 500,
   [errors.WRONG_CREDENTIALS_ERROR]: 401,
+  [errors.UNAUTHENTICATED_ERROR]: 401,
   [errors.SCHEMA_VALIDATION_ERROR]: 422,
   [errors.REGISTERED_EMAIL_ERROR]: 409
 };
