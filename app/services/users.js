@@ -1,6 +1,7 @@
 const jwt = require('jwt-simple');
 const db = require('../models');
 const errors = require('../errors');
+const config = require('../../config').common.session;
 
 const createUser = body =>
   db.User.newUser(body)
@@ -10,7 +11,7 @@ const createUser = body =>
 const authenticate = async ({ email, password }) => {
   try {
     const { dataValues: user } = await db.User.findByCredentials(email, password);
-    const token = await jwt.encode({ id: user.id.toString() }, process.env.JWT_SECRET);
+    const token = await jwt.encode({ id: user.id.toString() }, config.secret);
     return { user: user.email, token };
   } catch (error) {
     throw error;

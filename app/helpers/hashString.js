@@ -1,7 +1,9 @@
 const bcrypt = require('bcrypt');
 
+const config = require('../../config').common.hashing;
+
 const hashString = async string => {
-  const hashedString = await bcrypt.hashSync(string, Number(process.env.SALT));
+  const hashedString = await bcrypt.hashSync(string, Number(config.salt));
   return hashedString;
 };
 
