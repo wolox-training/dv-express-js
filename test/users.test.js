@@ -1,0 +1,55 @@
+const request = require('supertest');
+
+const app = require('../app');
+// const { factoryByModel } = require('./factory/factory_by_models');
+const { createUser, buildUser } = require('./factory/users');
+
+let user = '';
+
+beforeEach(async () => {
+  user = await buildUser();
+});
+
+describe('Post Sign UP', () => {
+  test('Should sign up a new user', async done => {
+    // const user = await factoryByModel('User');
+    const response = await request(app)
+      .post('/users')
+      .send(user.dataValues);
+    expect(response.status).toBe(201);
+    expect(response.body.email).toBe(user.dataValues.email);
+    done();
+  });
+
+  test('Should fail for invalid password', async done => {
+    const invalidPassword = { ...user.dataValues, password: 'contra12*' };
+    const response = await request(app)
+      .post('/users')
+      .send(invalidPassword);
+    expect(response.status).toBe(422);
+    expect(response.body.internal_code).toBe('schema_validation_error');
+    expect(response.body.message.password.msg).toEqual('Password must be alphanumeric.');
+    done();
+  });
+
+  test('Should fail for email in use', async done => {
+    const newUser = await createUser();
+    const response = await request(app)
+      .post('/users')
+      .send(newUser.dataValues);
+    expect(response.status).toBe(409);
+    expect(response.body.internal_code).toBe('registered_email_error');
+    expect(response.body.message).toBe('Email is already registered.');
+    done();
+  });
+
+  test('Should fail for empty parameters', async done => {
+    const response = await request(app)
+      .post('/users')
+      .send();
+    expect(response.status).toBe(422);
+    expect(response.body.internal_code).toBe('schema_validation_error');
+    expect(response.body.message.firstName.msg).toBe('First name cannot be empty!');
+    done();
+  });
+});
