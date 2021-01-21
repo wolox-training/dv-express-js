@@ -35,12 +35,9 @@ const readWeets = async ({ page = 1, limit = 5 }) => {
       }
     });
     if (!weets) throw errors.databaseError('Some error occurred while getting weets');
-    if (totalItems === 0) {
-      return { noWeets: 'There are no weets to show.' };
-    }
     const currentPage = page;
     const totalPages = Math.ceil(totalItems / limit);
-    if (page > totalPages) {
+    if (page > totalPages && totalPages > 0) {
       throw errors.badRequestError('Page requested exceed the total of pages.');
     }
     return { totalItems, weets, totalPages, currentPage };
