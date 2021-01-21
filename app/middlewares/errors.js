@@ -11,6 +11,7 @@ const statusCodes = {
   [errors.SCHEMA_VALIDATION_ERROR]: 422,
   [errors.REGISTERED_EMAIL_ERROR]: 409,
   [errors.FORBIDEN_MODULE_ERROR]: 403,
+  [errors.BAD_REQUEST_ERROR]: 400,
   [errors.WITHOUT_CONNECTION_ERROR]: 503,
   [errors.INVALID_WEET_ERROR]: 422
 };

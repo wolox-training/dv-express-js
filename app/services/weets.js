@@ -24,7 +24,30 @@ const createWeet = async (user, content) => {
   }
 };
 
+const readWeets = async ({ page = 1, limit = 5 }) => {
+  const offset = (page - 1) * limit;
+  try {
+    const { count: totalItems, rows: weets } = await db.Weet.findAndCountAll({
+      limit,
+      offset,
+      attributes: {
+        exclude: ['UserId']
+      }
+    });
+    if (!weets) throw errors.databaseError('Some error occurred while getting weets');
+    const currentPage = page;
+    const totalPages = Math.ceil(totalItems / limit);
+    if (page > totalPages && totalPages > 0) {
+      throw errors.badRequestError('Page requested exceed the total of pages.');
+    }
+    return { totalItems, weets, totalPages, currentPage };
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   fetchWeet,
+  readWeets,
   createWeet
 };
