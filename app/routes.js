@@ -9,7 +9,8 @@ const checkIfEmailExists = require('./middlewares/emailValidation');
 
 exports.init = app => {
   app.get('/health', healthCheck);
-  app.get('/weets', weetsController.generateWeet);
+
+  app.post('/weets', verifyAuthentication, weetsController.generateWeet);
 
   app.post('/users', [validateBySchema(signUpSchema), checkIfEmailExists], usersController.signUp);
   app.post('/users/sessions', validateBySchema(signInSchema), usersController.signIn);
