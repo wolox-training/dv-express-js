@@ -60,12 +60,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
   User.associate = models => {
-    User.hasMany(models.Weet, {
-      foreingKey: 'userId'
-    });
-    User.belongsToMany(models.Weet, {
-      through: models.Rating
-    });
+    User.hasMany(models.Weet);
+    User.hasMany(models.Rating);
   };
 
   User.newUser = async data => {

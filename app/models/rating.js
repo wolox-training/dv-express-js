@@ -32,5 +32,13 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'ratings'
     }
   );
+  Rating.associate = models => {
+    Rating.belongsTo(models.User, {
+      foreingKey: 'ratingUserId'
+    });
+    Rating.belongsTo(models.Weet, {
+      foreingKey: 'weetId'
+    });
+  };
   return Rating;
 };

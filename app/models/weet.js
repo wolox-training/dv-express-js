@@ -25,10 +25,10 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
   Weet.associate = models => {
-    Weet.belongsTo(models.User);
-    Weet.belongsToMany(models.User, {
-      through: models.Rating
+    Weet.belongsTo(models.User, {
+      foreingKey: 'userId'
     });
+    Weet.hasMany(models.Rating);
   };
   return Weet;
 };
