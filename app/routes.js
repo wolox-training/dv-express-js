@@ -21,7 +21,10 @@ exports.init = app => {
 
   app.post('/users', [validateBySchema(signUpSchema), checkIfEmailExists], usersController.signUp);
   app.post('/users/sessions', validateBySchema(signInSchema), usersController.signIn);
-  app.post('/admin/users', [verifyAuthentication, validateBySchema(signUpSchema)], usersController.postAdmin);
+  app.post(
+    '/admin/users',
+    [verifyAuthentication, validateBySchema(signUpSchema)],
+    usersController.signUpAdminUser
+  );
   app.get('/users', [verifyAuthentication, validateBySchema(paginationSchema)], usersController.getUsersList);
-  // app.post('/endpoint/post/path', [], controller.methodPOST);
 };

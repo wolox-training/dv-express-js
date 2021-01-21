@@ -26,3 +26,12 @@ exports.badRequestError = message => internalError(message, exports.BAD_REQUEST_
 
 exports.NOT_FOUND_ERROR = 'not_found_error';
 exports.notFoundError = message => internalError(message, exports.NOT_FOUND_ERROR);
+
+exports.UNAUTHENTICATED_ERROR = 'unauthenticated_error';
+exports.unauthenticatedError = message => internalError(message, exports.UNAUTHENTICATED_ERROR);
+
+exports.WITHOUT_CONNECTION_ERROR = 'without_connection_error';
+exports.withoutConnectionError = message => internalError(message, exports.WITHOUT_CONNECTION_ERROR);
+
+exports.INVALID_WEET_ERROR = 'invalid_weet_error';
+exports.invalidWeetError = message => internalError(message, exports.INVALID_WEET_ERROR);
