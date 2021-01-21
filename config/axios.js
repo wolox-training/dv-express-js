@@ -1,7 +1,8 @@
 const axios = require('axios');
+const config = require('./index').common.externalApi;
 
 const api = axios.create({
-  baseURL: process.env.NUMBERS_API_URL,
+  baseURL: config.numbers,
   timeout: 3000
 });
 

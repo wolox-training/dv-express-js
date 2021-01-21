@@ -38,12 +38,18 @@ const config = {
     },
     session: {
       header_name: 'authorization',
-      secret: process.env.NODE_API_SESSION_SECRET
+      secret: process.env.JWT_SECRET
     },
     headers: {
       apiDate: process.env.API_DATE || 'X-API-Date',
       packageVersion: process.env.PACKAGE_VERSION || 'X-Package-Version',
       nodeVersion: process.env.NODE_VERSION || 'X-Node-Version'
+    },
+    externalApi: {
+      numbers: process.env.NUMBERS_API_URL
+    },
+    hashing: {
+      salt: process.env.SALT
     }
   }
 };
