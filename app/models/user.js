@@ -60,6 +60,11 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
+  User.associate = models => {
+    User.hasMany(models.Weet);
+    User.hasMany(models.Rating);
+  };
+
   User.newUser = async data => {
     const user = User.create({
       ...data,
