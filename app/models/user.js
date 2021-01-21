@@ -46,6 +46,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM,
         values: ['admin', 'user'],
         defaultValue: 'user'
+      },
+      position: {
+        type: DataTypes.ENUM,
+        values: ['Developer', 'Lead', 'TL', 'EM', 'HEAD', 'CEO'],
+        defaultValue: 'Developer'
       }
     },
     {
@@ -56,6 +61,7 @@ module.exports = (sequelize, DataTypes) => {
   );
   User.associate = models => {
     User.hasMany(models.Weet);
+    User.hasMany(models.Rating);
   };
 
   User.newUser = async data => {

@@ -28,6 +28,7 @@ module.exports = (sequelize, DataTypes) => {
     Weet.belongsTo(models.User, {
       foreingKey: 'userId'
     });
+    Weet.hasMany(models.Rating);
   };
   return Weet;
 };
