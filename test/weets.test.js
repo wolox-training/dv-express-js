@@ -100,6 +100,7 @@ describe('Get Weets', () => {
     expect(response.status).toBe(200);
     expect(response.body.currentPage).toBe(2);
     expect(response.body.weets.length).toBe(1);
+    expect(response.body.totalItems).toBe(3);
     done();
   });
 
