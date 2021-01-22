@@ -62,7 +62,7 @@ const getUserWeets = async userId => {
   try {
     const userWeets = await db.Weet.findAll({
       where: { userId }
-    }).map(weet => weet.dataValues.id);
+    });
     if (userWeets.length === 0) {
       throw errors.databaseError('Some error occurred while getting the weets.');
     }

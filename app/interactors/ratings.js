@@ -7,15 +7,16 @@ const errors = require('../errors');
 const prepareDataToRate = async weetId => {
   try {
     const ratedWeet = await weetsService.getWeet(weetId);
-    const weetsRatedUser = await weetsService.getUserWeets(ratedWeet.dataValues.userId);
+    const ratedUserWeets = await weetsService.getUserWeets(ratedWeet.dataValues.userId);
+    const ratedUserWeetsIds = ratedUserWeets.map(weet => weet.dataValues.id);
     const ratedUser = await usersService.getUser(ratedWeet.dataValues.userId);
-    return { weetsRatedUser, ratedUser };
+    return { ratedUserWeetsIds, ratedUser };
   } catch (error) {
     throw error;
   }
 };
 
-const postRating = async (ratingUserId, weetId, score, { weetsRatedUser, ratedUser }) => {
+const postRating = async (ratingUserId, weetId, score, { ratedUserWeetsIds, ratedUser }) => {
   const transaction = await db.sequelize.transaction();
   try {
     const alreadyRated = await ratingServices.getRating(ratingUserId, weetId, { transaction });
@@ -29,7 +30,7 @@ const postRating = async (ratingUserId, weetId, score, { weetsRatedUser, ratedUs
       await ratingServices.createRating(ratingUserId, weetId, score, { transaction });
     }
 
-    const totalPoints = await db.Rating.sum('score', { where: { weetId: weetsRatedUser }, transaction });
+    const totalPoints = await db.Rating.sum('score', { where: { weetId: ratedUserWeetsIds }, transaction });
 
     await db.User.setPosition(ratedUser, totalPoints, { transaction });
 
