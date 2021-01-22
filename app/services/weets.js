@@ -17,7 +17,7 @@ const fetchWeet = async () => {
 
 const createWeet = async (user, content) => {
   try {
-    await db.Weet.create({ userId: user.id, content });
+    await db.Weet.create({ content, userId: user.id });
     return { user: user.email, content };
   } catch (error) {
     throw errors.databaseError('Weet could not be created in database.');
@@ -46,8 +46,36 @@ const readWeets = async ({ page = 1, limit = 5 }) => {
   }
 };
 
+const getWeet = async weetId => {
+  try {
+    const weet = await db.Weet.findOne({ where: { id: weetId } });
+    if (!weet) {
+      throw errors.notFoundError('Could not find the weet requested');
+    }
+    return weet;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getUserWeets = async userId => {
+  try {
+    const userWeets = await db.Weet.findAll({
+      where: { userId }
+    });
+    if (userWeets.length === 0) {
+      throw errors.databaseError('Some error occurred while getting the weets.');
+    }
+    return userWeets;
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   fetchWeet,
   readWeets,
-  createWeet
+  createWeet,
+  getWeet,
+  getUserWeets
 };

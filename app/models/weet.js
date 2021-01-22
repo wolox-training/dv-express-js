@@ -24,11 +24,11 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'weets-user'
     }
   );
+
   Weet.associate = models => {
-    Weet.belongsTo(models.User, {
-      foreingKey: 'userId'
-    });
+    Weet.belongsTo(models.User, { foreingKey: 'userId' });
     Weet.hasMany(models.Rating);
   };
+
   return Weet;
 };

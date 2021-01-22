@@ -24,6 +24,9 @@ exports.forbidenModuleError = message => internalError(message, exports.FORBIDEN
 exports.BAD_REQUEST_ERROR = 'bad_request_error';
 exports.badRequestError = message => internalError(message, exports.BAD_REQUEST_ERROR);
 
+exports.NOT_FOUND_ERROR = 'not_found_error';
+exports.notFoundError = message => internalError(message, exports.NOT_FOUND_ERROR);
+
 exports.UNAUTHENTICATED_ERROR = 'unauthenticated_error';
 exports.unauthenticatedError = message => internalError(message, exports.UNAUTHENTICATED_ERROR);
 

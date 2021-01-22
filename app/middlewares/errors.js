@@ -12,6 +12,7 @@ const statusCodes = {
   [errors.REGISTERED_EMAIL_ERROR]: 409,
   [errors.FORBIDEN_MODULE_ERROR]: 403,
   [errors.BAD_REQUEST_ERROR]: 400,
+  [errors.NOT_FOUND_ERROR]: 404,
   [errors.WITHOUT_CONNECTION_ERROR]: 503,
   [errors.INVALID_WEET_ERROR]: 422
 };

@@ -16,7 +16,7 @@ beforeEach(async () => {
 });
 
 describe('Post Weet', () => {
-  test('Should fail for unauthenticate user', async done => {
+  test('Should fail for unauthenticated user', async done => {
     const response = await request(app)
       .post('/weets')
       .send();
@@ -55,7 +55,7 @@ describe('Post Weet', () => {
 });
 
 describe('Get Weets', () => {
-  test('Should fail for unauthenticate user', async done => {
+  test('Should fail for unauthenticated user', async done => {
     const response = await request(app)
       .get('/weets')
       .send();
@@ -114,6 +114,52 @@ describe('Get Weets', () => {
       .send();
     expect(response.status).toBe(400);
     expect(response.body.message).toBe('Page requested exceed the total of pages.');
+    done();
+  });
+});
+
+describe('Post weets ratings', () => {
+  test('Should fail for unauthenticated user', async done => {
+    const response = await request(app)
+      .post('/weets/1/ratings')
+      .send();
+    expect(response.status).toBe(401);
+    expect(response.body.internal_code).toBe('unauthenticated_error');
+    expect(response.body.message).toBe('Please sign in to access this module.');
+    done();
+  });
+
+  test('Should fail for inexistent weet', async done => {
+    const body = await loginNewUser(user);
+    const response = await request(app)
+      .post('/weets/0/ratings')
+      .set('Authorization', `${body.token}`)
+      .send({ score: 1 });
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe('Could not find the weet requested');
+    done();
+  });
+
+  test('Should fail for invalid score and weetId', async done => {
+    const body = await loginNewUser(user);
+    const response = await request(app)
+      .post('/weets/one/ratings')
+      .set('Authorization', `${body.token}`)
+      .send({ score: 0 });
+    expect(response.status).toBe(422);
+    expect(response.text).toContain('schema_validation_error');
+    done();
+  });
+
+  test('Should rate a weet', async done => {
+    const body = await loginNewUser(user);
+    const weet = await createWeet({ userId: user.id });
+    const response = await request(app)
+      .post(`/weets/${weet.dataValues.id}/ratings`)
+      .set('Authorization', `${body.token}`)
+      .send({ score: 1 });
+    expect(response.status).toBe(201);
+    expect(response.body.message).toBe('Rating successfully stored');
     done();
   });
 });

@@ -3,7 +3,8 @@ const usersController = require('./controllers/users');
 const { healthCheck } = require('./controllers/healthCheck');
 const validateBySchema = require('./middlewares/validations');
 const { signUpSchema, signInSchema } = require('./schemas/users');
-const paginationSchema = require('./schemas/query');
+const { rateWeetSchema } = require('./schemas/rateWeet');
+const paginationSchema = require('./schemas/pagination');
 const verifyAuthentication = require('./middlewares/authentication');
 const checkIfEmailExists = require('./middlewares/emailValidation');
 
@@ -12,6 +13,11 @@ exports.init = app => {
 
   app.post('/weets', verifyAuthentication, weetsController.generateWeet);
   app.get('/weets', [verifyAuthentication, validateBySchema(paginationSchema)], weetsController.getWeets);
+  app.post(
+    '/weets/:id/ratings',
+    [verifyAuthentication, validateBySchema(rateWeetSchema)],
+    weetsController.rateWeet
+  );
 
   app.post('/users', [validateBySchema(signUpSchema), checkIfEmailExists], usersController.signUp);
   app.post('/users/sessions', validateBySchema(signInSchema), usersController.signIn);
