@@ -1,4 +1,5 @@
 const weetsService = require('../services/weets');
+const ratingsInteractor = require('../interactors/ratings');
 
 const generateWeet = async (req, res, next) => {
   try {
@@ -26,8 +27,8 @@ const rateWeet = async (req, res, next) => {
     body: { score }
   } = req;
   try {
-    const prepareData = await weetsService.prepareRating(weetId);
-    await weetsService.postRating(ratingUserId, weetId, score, prepareData);
+    const preparedData = await ratingsInteractor.prepareDataToRate(weetId);
+    await ratingsInteractor.postRating(ratingUserId, weetId, score, preparedData);
     return res.status(201).send({ message: 'Rating successfully stored' });
   } catch (error) {
     return next(error);

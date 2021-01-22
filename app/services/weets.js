@@ -46,59 +46,28 @@ const readWeets = async ({ page = 1, limit = 5 }) => {
   }
 };
 
-const prepareRating = async weetId => {
+const getWeet = async weetId => {
   try {
-    const ratedWeet = await db.Weet.findOne({ where: { id: weetId } });
-    if (!ratedWeet) {
+    const weet = await db.Weet.findOne({ where: { id: weetId } });
+    if (!weet) {
       throw errors.notFoundError('Could not find the weet requested');
     }
-    const weetsRatedUser = await db.Weet.findAll({
-      where: { userId: ratedWeet.dataValues.userId }
-    }).map(weet => weet.dataValues.id);
-
-    const ratedUser = await db.User.findOne({ where: { id: ratedWeet.dataValues.userId } });
-    return { weetsRatedUser, ratedUser };
+    return weet;
   } catch (error) {
     throw error;
   }
 };
 
-const postRating = async (ratingUserId, weetId, score, { weetsRatedUser, ratedUser }) => {
-  const transaction = await db.sequelize.transaction();
+const getUserWeets = async userId => {
   try {
-    const alreadyRated = await db.Rating.findOne({
-      where: { ratingUserId, weetId },
-      attributes: {
-        exclude: ['UserId', 'WeetId']
-      },
-      transaction
-    });
-    if (alreadyRated) {
-      if (alreadyRated.score === score) {
-        throw errors.badRequestError('You already rated this weet');
-      }
-      alreadyRated.score = score;
-      await alreadyRated.save({ transaction });
-    } else {
-      await db.Rating.create({ ratingUserId, weetId, score }, { transaction });
+    const userWeets = await db.Weet.findAll({
+      where: { userId }
+    }).map(weet => weet.dataValues.id);
+    if (userWeets.length === 0) {
+      throw errors.databaseError('Some error occurred while getting the weets.');
     }
-
-    const totalPoints = await db.Rating.findAll({
-      where: { weetId: weetsRatedUser },
-      attributes: {
-        exclude: ['UserId', 'WeetId']
-      },
-      transaction
-    })
-      .map(rate => rate.dataValues.score)
-      .reduce((accumulator, currentValue) => accumulator + currentValue);
-
-    await db.User.setPosition(ratedUser, totalPoints, { transaction });
-
-    await transaction.commit();
-    return;
+    return userWeets;
   } catch (error) {
-    if (transaction.rollback) await transaction.rollback();
     throw error;
   }
 };
@@ -107,6 +76,6 @@ module.exports = {
   fetchWeet,
   readWeets,
   createWeet,
-  postRating,
-  prepareRating
+  getWeet,
+  getUserWeets
 };
