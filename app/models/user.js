@@ -73,7 +73,7 @@ module.exports = (sequelize, DataTypes) => {
     return user;
   };
 
-  User.setPosition = async (user, points) => {
+  User.setPosition = async (user, points, { transaction }) => {
     let position = '';
     if (points <= 5) position = 'Developer';
     else if (points <= 9) position = 'Lead';
@@ -83,7 +83,7 @@ module.exports = (sequelize, DataTypes) => {
     else position = 'CEO';
 
     user.position = position;
-    await user.save();
+    await user.save({ transaction });
   };
 
   User.findByCredentials = async (email, password) => {

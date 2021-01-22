@@ -53,4 +53,16 @@ const logoutAll = userId =>
     .then(response => response)
     .catch(() => Promise.reject(errors.databaseError('An error occurred while invalidating all sessions.')));
 
-module.exports = { createUser, authenticate, getUsers, createAdmin, logoutAll };
+const getUser = async userId => {
+  try {
+    const user = await db.User.findOne({ where: { id: userId } });
+    if (!user) {
+      throw errors.databaseError('Some error occurred while get the user.');
+    }
+    return user;
+  } catch (error) {
+    throw error;
+  }
+};
+
+module.exports = { createUser, authenticate, getUsers, createAdmin, getUser, logoutAll };
