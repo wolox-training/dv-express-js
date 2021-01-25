@@ -14,7 +14,8 @@ const statusCodes = {
   [errors.BAD_REQUEST_ERROR]: 400,
   [errors.NOT_FOUND_ERROR]: 404,
   [errors.WITHOUT_CONNECTION_ERROR]: 503,
-  [errors.INVALID_WEET_ERROR]: 422
+  [errors.INVALID_WEET_ERROR]: 422,
+  [errors.INVALID_ACCESS_TOKEN_ERROR]: 401
 };
 
 exports.handle = (error, req, res, next) => {

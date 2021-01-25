@@ -27,4 +27,5 @@ exports.init = app => {
     usersController.signUpAdminUser
   );
   app.get('/users', [verifyAuthentication, validateBySchema(paginationSchema)], usersController.getUsersList);
+  app.post('/users/sessions/invalidate_all', verifyAuthentication, usersController.invalidateAllSessions);
 };

@@ -12,6 +12,7 @@ const authenticate = async ({ email, password }) => {
   try {
     const { dataValues: user } = await db.User.findByCredentials(email, password);
     const token = await jwt.encode({ id: user.id.toString() }, config.secret);
+    await db.Token.create({ userId: user.id, token });
     return { user: user.email, token };
   } catch (error) {
     throw error;
@@ -47,6 +48,11 @@ const createAdmin = async body => {
   }
 };
 
+const logoutAll = userId =>
+  db.Token.destroy({ where: { userId } })
+    .then(response => response)
+    .catch(() => Promise.reject(errors.databaseError('An error occurred while invalidating all sessions.')));
+
 const getUser = async userId => {
   try {
     const user = await db.User.findOne({ where: { id: userId } });
@@ -59,4 +65,4 @@ const getUser = async userId => {
   }
 };
 
-module.exports = { createUser, authenticate, getUsers, createAdmin, getUser };
+module.exports = { createUser, authenticate, getUsers, createAdmin, getUser, logoutAll };

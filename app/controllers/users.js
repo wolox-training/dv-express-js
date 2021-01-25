@@ -42,4 +42,14 @@ const signUpAdminUser = async (req, res, next) => {
   }
 };
 
-module.exports = { signUp, signIn, getUsersList, signUpAdminUser };
+const invalidateAllSessions = async (req, res, next) => {
+  const { id } = req.user;
+  try {
+    await usersService.logoutAll(id);
+    return res.status(204).send();
+  } catch (error) {
+    return next(error);
+  }
+};
+
+module.exports = { signUp, signIn, getUsersList, signUpAdminUser, invalidateAllSessions };

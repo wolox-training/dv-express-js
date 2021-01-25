@@ -120,7 +120,6 @@ describe('Post Sign In User', () => {
       });
     expect(response.status).toBe(200);
     expect(response.body.token).toBeTruthy();
-
     done();
   });
 });
@@ -207,6 +206,44 @@ describe('Post User Admin', () => {
     expect(response.status).toBe(201);
     expect(response.body.email).toBe(differentUser.email);
     expect(response.body.role).toBe('admin');
+    done();
+  });
+});
+
+describe('Post invalidate all sessions', () => {
+  test('Should fail for unauthenticated user', async done => {
+    const response = await request(app)
+      .post('/users/sessions/invalidate_all')
+      .send();
+    expect(response.status).toBe(401);
+    expect(response.body.internal_code).toBe('unauthenticated_error');
+    expect(response.body.message).toBe('Please sign in to access this module.');
+    done();
+  });
+
+  test('Should invalidate all user sessions', async done => {
+    const body = await loginNewUser(user);
+    const response = await request(app)
+      .post('/users/sessions/invalidate_all')
+      .set('Authorization', `${body.token}`)
+      .send();
+    expect(response.status).toBe(204);
+    done();
+  });
+
+  test('Should fail fot user with invalidate session', async done => {
+    const body = await loginNewUser(user);
+    await request(app)
+      .post('/users/sessions/invalidate_all')
+      .set('Authorization', `${body.token}`)
+      .send();
+    const response = await request(app)
+      .post('/users/sessions/invalidate_all')
+      .set('Authorization', `${body.token}`)
+      .send();
+    expect(response.status).toBe(401);
+    expect(response.body.internal_code).toBe('invalid_access_token_error');
+    expect(response.body.message).toBe('Invalid access token. Please sign in.');
     done();
   });
 });
