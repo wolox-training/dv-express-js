@@ -35,3 +35,6 @@ exports.withoutConnectionError = message => internalError(message, exports.WITHO
 
 exports.INVALID_WEET_ERROR = 'invalid_weet_error';
 exports.invalidWeetError = message => internalError(message, exports.INVALID_WEET_ERROR);
+
+exports.INVALID_ACCESS_TOKEN_ERROR = 'invalid_access_token_error';
+exports.invalidAccessTokenError = message => internalError(message, exports.INVALID_ACCESS_TOKEN_ERROR);
