@@ -242,8 +242,8 @@ describe('Post invalidate all sessions', () => {
       .set('Authorization', `${body.token}`)
       .send();
     expect(response.status).toBe(401);
-    expect(response.body.internal_code).toBe('unauthenticated_error');
-    expect(response.body.message).toBe('Please sign in to access this module.');
+    expect(response.body.internal_code).toBe('invalid_access_token_error');
+    expect(response.body.message).toBe('Invalid access token. Please sign in.');
     done();
   });
 });
